@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raoult's Law Interactive Demonstration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #e74c3c;
+            --tertiary-color: #2ecc71;
+            --background-color: #f8f9fa;
+            --text-color: #2c3e50;
+            --card-color: #ffffff;
+            --border-color: #dfe6e9;
+            --hover-color: #2980b9;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .introduction {
+            max-width: 800px;
+            margin: 0 auto 30px;
+            text-align: center;
+            padding: 15px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        select, input[type="range"], button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            padding: 0;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 10px;
+        }
+        
+        .deviation-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .deviation-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+        
+        .negative-btn {
+            background-color: var(--secondary-color);
+        }
+        
+        .negative-btn:hover {
+            background-color: #c0392b;
+        }
+        
+        .ideal-btn {
+            background-color: var(--primary-color);
+        }
+        
+        .positive-btn {
+            background-color: var(--tertiary-color);
+        }
+        
+        .positive-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f9fe;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+        
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .y-axis-label {
+            transform: rotate(-90deg);
+            left: -50px;
+            top: 50%;
+        }
+        .y-axis-label-vp {
+            transform: rotate(-90deg);
+            left: -60px;
+            top: 50%;
+        }
+        
+        .x-axis-label {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .section {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Raoult's Law Interactive Demonstration</h1>
+    </header>
+    
+    <div class="introduction">
+        <p>Explore how Raoult's Law describes the vapor pressure of a mixture of liquids, and how real mixtures can deviate from ideal behavior. Adjust parameters to see how they affect vapor pressure and boiling point curves.</p>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <h2>Vapor Pressure Diagram</h2>
+            <!-- <div style="position: fixed; bottom: 10px; right: 10px; background: #333; color: #fff; padding: 8px 12px; border-radius: 5px;">
+                <a href="/" style="color: #fff; text-decoration: none;">Back to Dashboard</a>
+            </div> -->
+            <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+                <a href="/" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background-color: #3498db; color: white; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease;" title="Back to Dashboard">
+                    <i class="fas fa-home" style="font-size: 20px;"></i>
+                </a>
+            </div>
+            <div class="control-panel">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Component A Vapor Pressure (mmHg):</span>
+                        <span id="pressure-a-value">100</span>
+                    </div>
+                    <input type="range" id="pressure-a" min="50" max="400" value="100" step="10">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Component B Vapor Pressure (mmHg):</span>
+                        <span id="pressure-b-value">200</span>
+                    </div>
+                    <input type="range" id="pressure-b" min="50" max="400" value="200" step="10">
+                </div>
+                
+                <div class="deviation-options">
+                    <button class="deviation-btn negative-btn" id="negative-deviation">Negative Deviation</button>
+                    <button class="deviation-btn ideal-btn" id="ideal-behavior">Ideal Behavior</button>
+                    <button class="deviation-btn positive-btn" id="positive-deviation">Positive Deviation</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="vapor-pressure-chart"></canvas>
+                <div class="axis-label y-axis-label-vp">Vapor Pressure (mmHg)</div>
+                <div class="axis-label x-axis-label">Mole Fraction of Component B</div>
+                <div class="tooltip" id="vapor-tooltip"></div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-color)"></div>
+                    <span>Total Vapor Pressure</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--secondary-color)"></div>
+                    <span>Component A</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--tertiary-color)"></div>
+                    <span>Component B</span>
+                </div>
+            </div>
+            
+            <div class="explanation" id="vapor-explanation">
+                <p><strong>Raoult's Law</strong> states that the partial vapor pressure of each component in an ideal mixture is equal to the vapor pressure of the pure component multiplied by its mole fraction in the mixture.</p>
+                <p>Mathematically: P<sub>total</sub> = x<sub>A</sub>P<sub>A</sub> + x<sub>B</sub>P<sub>B</sub></p>
+                <p>Real mixtures can show <strong>positive deviations</strong> (higher pressure than predicted) or <strong>negative deviations</strong> (lower pressure than predicted).</p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Boiling Point Diagram</h2>
+            <div class="control-panel">
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Component A Boiling Point (°C):</span>
+                        <span id="bp-a-value">78</span>
+                    </div>
+                    <input type="range" id="bp-a" min="50" max="150" value="78" step="1">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>Component B Boiling Point (°C):</span>
+                        <span id="bp-b-value">100</span>
+                    </div>
+                    <input type="range" id="bp-b" min="50" max="150" value="100" step="1">
+                </div>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>System Pressure (mmHg):</span>
+                        <span id="system-pressure-value">760</span>
+                    </div>
+                    <input type="range" id="system-pressure" min="100" max="1500" value="760" step="10">
+                </div>
+                
+                <div class="deviation-options">
+                    <button class="deviation-btn negative-btn" id="bp-negative-deviation">Negative Deviation</button>
+                    <button class="deviation-btn ideal-btn" id="bp-ideal-behavior">Ideal Behavior</button>
+                    <button class="deviation-btn positive-btn" id="bp-positive-deviation">Positive Deviation</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="boiling-point-chart"></canvas>
+                <div class="axis-label y-axis-label">Temperature (°C)</div>
+                <div class="axis-label x-axis-label">Mole Fraction of Component B</div>
+                <div class="tooltip" id="bp-tooltip"></div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--primary-color)"></div>
+                    <span>Liquid Curve</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--secondary-color)"></div>
+                    <span>Vapor Curve</span>
+                </div>
+            </div>
+            
+            <div class="explanation" id="bp-explanation">
+                <p>The <strong>boiling point diagram</strong> shows the relationship between composition and boiling temperature at a fixed pressure.</p>
+                <p>The upper curve represents the <strong>liquid composition</strong>, while the lower curve represents the <strong>vapor composition</strong>.</p>
+                <p>The difference between these curves demonstrates that the vapor is typically richer in the more volatile component (the one with the lower boiling point).</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Constants and utility functions
+        const R = 8.314; // Gas constant in J/(mol·K)
+        const pNormal = 760; // Standard pressure in mmHg
+        
+        function kelvinToCelsius(kelvin) {
+            return kelvin - 273.15;
+        }
+        
+        function celsiusToKelvin(celsius) {
+            return celsius + 273.15;
+        }
+        
+        // Antoine equation for vapor pressure
+        function antoineEquation(A, B, C, tempC) {
+            return Math.pow(10, A - (B / (tempC + C)));
+        }
+        
+        // Calculate boiling point from vapor pressure
+        function calculateBoilingPoint(vaporPressure, compA, compB, mole_fraction) {
+            // Simple approximation using Clausius-Clapeyron
+            const P1 = vaporPressure;
+            const T1 = celsiusToKelvin(compA);
+            const P2 = pNormal;
+            
+            // Estimate average heat of vaporization (in J/mol)
+            const deltaHvapA = 40000; // Approximate for many liquids
+            const deltaHvapB = 42000;
+            const deltaHvap = deltaHvapA * (1 - mole_fraction) + deltaHvapB * mole_fraction;
+            
+            const T2 = 1 / ((1 / T1) - (R / deltaHvap) * Math.log(P2 / P1));
+            return kelvinToCelsius(T2);
+        }
+        
+        // Canvas drawing functions
+        function setupCanvas(canvasId, width, height) {
+            const canvas = document.getElementById(canvasId);
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            return { canvas, ctx };
+        }
+        
+        function drawAxes(ctx, padding, width, height) {
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Draw tick marks on x-axis
+            for (let i = 0; i <= 10; i++) {
+                const x = padding + (i / 10) * (width - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(x, height - padding);
+                ctx.lineTo(x, height - padding + 5);
+                ctx.stroke();
+                
+                // Draw tick labels
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText((i / 10).toFixed(1), x, height - padding + 15);
+            }
+            
+            // Draw grid lines
+            ctx.setLineDash([2, 2]);
+            for (let i = 1; i <= 10; i++) {
+                const x = padding + (i / 10) * (width - 2 * padding);
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.strokeStyle = '#eee';
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+        
+        // Vapor Pressure Chart Setup
+        let deviationType = 'ideal';
+        const canvasWidth = 550;
+        const canvasHeight = 400;
+        const padding = 40;
+        
+        const { canvas: vaporCanvas, ctx: vaporCtx } = setupCanvas('vapor-pressure-chart', canvasWidth, canvasHeight);
+        drawAxes(vaporCtx, padding, canvasWidth, canvasHeight);
+        
+        const { canvas: bpCanvas, ctx: bpCtx } = setupCanvas('boiling-point-chart', canvasWidth, canvasHeight);
+        drawAxes(bpCtx, padding, canvasWidth, canvasHeight);
+        
+        // Interaction variables
+        let pressureA = parseFloat(document.getElementById('pressure-a').value);
+        let pressureB = parseFloat(document.getElementById('pressure-b').value);
+        let bpA = parseFloat(document.getElementById('bp-a').value);
+        let bpB = parseFloat(document.getElementById('bp-b').value);
+        let systemPressure = parseFloat(document.getElementById('system-pressure').value);
+        
+        // Update display values
+        document.getElementById('pressure-a-value').textContent = pressureA;
+        document.getElementById('pressure-b-value').textContent = pressureB;
+        document.getElementById('bp-a-value').textContent = bpA;
+        document.getElementById('bp-b-value').textContent = bpB;
+        document.getElementById('system-pressure-value').textContent = systemPressure;
+        
+        // Vapor pressure calculation with deviation options
+        function calculateVaporPressure(xB, pA, pB, type) {
+            const xA = 1 - xB;
+            let pTotal;
+            
+            // Partial pressures based on Raoult's Law
+            let pPartialA = xA * pA;
+            let pPartialB = xB * pB;
+            
+            if (type === 'ideal') {
+                // Ideal behavior - direct Raoult's Law
+                pTotal = pPartialA + pPartialB;
+            } else if (type === 'positive') {
+                // Positive deviation - higher than predicted
+                // Simplified model using activity coefficients
+                const gammaA = 1.5 - 0.7 * xA; // Activity coefficient for A
+                const gammaB = 1.5 - 0.7 * xB; // Activity coefficient for B
+                pPartialA = xA * gammaA * pA;
+                pPartialB = xB * gammaB * pB;
+                pTotal = pPartialA + pPartialB;
+            } else if (type === 'negative') {
+                // Negative deviation - lower than predicted
+                // Simplified model for negative deviation
+                const gammaA = 0.8 + 0.3 * xA; // Activity coefficient for A
+                const gammaB = 0.8 + 0.3 * xB; // Activity coefficient for B
+                pPartialA = xA * gammaA * pA;
+                pPartialB = xB * gammaB * pB;
+                pTotal = pPartialA + pPartialB;
+            }
+            
+            return { pTotal, pPartialA, pPartialB };
+        }
+        
+        // Draw vapor pressure diagram
+        function drawVaporPressureChart() {
+            // Clear canvas
+            vaporCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            drawAxes(vaporCtx, padding, canvasWidth, canvasHeight);
+            
+            // Calculate max pressure for scaling
+            const maxPressure = Math.max(pressureA, pressureB) * (deviationType === 'positive' ? 1.8 : 1.2);
+            
+            // Draw y-axis marks and labels
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (1 - i / 5) * (canvasHeight - 2 * padding);
+                const pressureValue = (i / 5) * maxPressure;
+                
+                vaporCtx.beginPath();
+                vaporCtx.moveTo(padding - 5, y);
+                vaporCtx.lineTo(padding, y);
+                vaporCtx.strokeStyle = '#666';
+                vaporCtx.stroke();
+                
+                vaporCtx.fillStyle = '#666';
+                vaporCtx.font = '10px Arial';
+                vaporCtx.textAlign = 'right';
+                vaporCtx.fillText(Math.round(pressureValue), padding - 8, y + 3);
+                
+                // Horizontal grid lines
+                vaporCtx.beginPath();
+                vaporCtx.moveTo(padding, y);
+                vaporCtx.lineTo(canvasWidth - padding, y);
+                vaporCtx.strokeStyle = '#eee';
+                vaporCtx.setLineDash([2, 2]);
+                vaporCtx.stroke();
+                vaporCtx.setLineDash([]);
+            }
+            
+            // Calculate points for the curves
+            const points = Array.from({ length: 101 }, (_, i) => {
+                const xB = i / 100;
+                const { pTotal, pPartialA, pPartialB } = calculateVaporPressure(xB, pressureA, pressureB, deviationType);
+                
+                // Convert to canvas coordinates
+                const x = padding + xB * (canvasWidth - 2 * padding);
+                const yTotal = padding + (1 - pTotal / maxPressure) * (canvasHeight - 2 * padding);
+                const yA = padding + (1 - pPartialA / maxPressure) * (canvasHeight - 2 * padding);
+                const yB = padding + (1 - pPartialB / maxPressure) * (canvasHeight - 2 * padding);
+                
+                return { x, yTotal, yA, yB, pTotal, pPartialA, pPartialB, xB };
+            });
+            
+            // Draw total pressure curve
+            vaporCtx.beginPath();
+            vaporCtx.moveTo(points[0].x, points[0].yTotal);
+            for (let i = 1; i < points.length; i++) {
+                vaporCtx.lineTo(points[i].x, points[i].yTotal);
+            }
+            vaporCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            vaporCtx.lineWidth = 2;
+            vaporCtx.stroke();
+            
+            // Draw partial pressure curve for component A
+            vaporCtx.beginPath();
+            vaporCtx.moveTo(points[0].x, points[0].yA);
+            for (let i = 1; i < points.length; i++) {
+                vaporCtx.lineTo(points[i].x, points[i].yA);
+            }
+            vaporCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
+            vaporCtx.lineWidth = 2;
+            vaporCtx.stroke();
+            
+            // Draw partial pressure curve for component B
+            vaporCtx.beginPath();
+            vaporCtx.moveTo(points[0].x, points[0].yB);
+            for (let i = 1; i < points.length; i++) {
+                vaporCtx.lineTo(points[i].x, points[i].yB);
+            }
+            vaporCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--tertiary-color');
+            vaporCtx.lineWidth = 2;
+            vaporCtx.stroke();
+            
+            // Draw reference lines
+            vaporCtx.beginPath();
+            vaporCtx.moveTo(padding, padding + (1 - pressureA / maxPressure) * (canvasHeight - 2 * padding));
+            vaporCtx.lineTo(padding, canvasHeight - padding);
+            vaporCtx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+            vaporCtx.setLineDash([5, 5]);
+            vaporCtx.stroke();
+            
+            vaporCtx.beginPath();
+            vaporCtx.moveTo(canvasWidth - padding, padding + (1 - pressureB / maxPressure) * (canvasHeight - 2 * padding));
+            vaporCtx.lineTo(canvasWidth - padding, canvasHeight - padding);
+            vaporCtx.stroke();
+            vaporCtx.setLineDash([]);
+            
+            // Store points for tooltip interaction
+            vaporCanvas.points = points;
+            
+            // Update explanation text based on deviation type
+            const explanation = document.getElementById('vapor-explanation');
+            if (deviationType === 'ideal') {
+                explanation.innerHTML = `
+                    <p><strong>Raoult's Law</strong> states that the partial vapor pressure of each component in an ideal mixture is equal to the vapor pressure of the pure component multiplied by its mole fraction in the mixture.</p>
+                    <p>Mathematically: P<sub>total</sub> = x<sub>A</sub>P<sub>A</sub> + x<sub>B</sub>P<sub>B</sub></p>
+                    <p>This ideal behavior occurs when molecules of A and B have similar intermolecular forces.</p>
+                `;
+            } else if (deviationType === 'positive') {
+                explanation.innerHTML = `
+                    <p><strong>Positive Deviation</strong> occurs when the total vapor pressure is higher than predicted by Raoult's Law.</p>
+                    <p>This happens when the A-B intermolecular forces are weaker than A-A and B-B forces, so molecules escape to the vapor phase more easily.</p>
+                    <p>Examples include ethanol-water mixtures, acetone-carbon disulfide, and chloroform-acetone mixtures.</p>
+                `;
+            } else if (deviationType === 'negative') {
+                explanation.innerHTML = `
+                    <p><strong>Negative Deviation</strong> occurs when the total vapor pressure is lower than predicted by Raoult's Law.</p>
+                    <p>This happens when the A-B intermolecular forces are stronger than A-A and B-B forces, making it harder for molecules to escape to the vapor phase.</p>
+                    <p>Examples include acetone-chloroform, hydrochloric acid-water, and chloroform-diethyl ether mixtures.</p>
+                `;
+            }
+        }
+        
+        // Draw boiling point diagram
+        function drawBoilingPointChart() {
+            // Clear canvas
+            bpCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+            drawAxes(bpCtx, padding, canvasWidth, canvasHeight);
+            
+            const minTemp = Math.min(bpA, bpB) - 10;
+            const maxTemp = Math.max(bpA, bpB) + 10;
+            const tempRange = maxTemp - minTemp;
+            
+            // Draw y-axis marks and labels
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (1 - i / 5) * (canvasHeight - 2 * padding);
+                const tempValue = minTemp + (i / 5) * tempRange;
+                
+                bpCtx.beginPath();
+                bpCtx.moveTo(padding - 5, y);
+                bpCtx.lineTo(padding, y);
+                bpCtx.strokeStyle = '#666';
+                bpCtx.stroke();
+                
+                bpCtx.fillStyle = '#666';
+                bpCtx.font = '10px Arial';
+                bpCtx.textAlign = 'right';
+                bpCtx.fillText(Math.round(tempValue), padding - 8, y + 3);
+                
+                // Horizontal grid lines
+                bpCtx.beginPath();
+                bpCtx.moveTo(padding, y);
+                bpCtx.lineTo(canvasWidth - padding, y);
+                bpCtx.strokeStyle = '#eee';
+                bpCtx.setLineDash([2, 2]);
+                bpCtx.stroke();
+                bpCtx.setLineDash([]);
+            }
+            
+            // Calculate vapor pressures at different temperatures for A and B
+            function getVaporPressure(temp, bp) {
+                // Simplified estimate based on Clausius-Clapeyron
+                const deltaHvap = 40000; // J/mol (approximate)
+                const T1 = celsiusToKelvin(bp);
+                const T2 = celsiusToKelvin(temp);
+                return pNormal * Math.exp((deltaHvap / R) * (1/T1 - 1/T2));
+            }
+            
+            // Generate datasets for liquid and vapor curves
+            const liquidPoints = [];
+            const vaporPoints = [];
+            
+            for (let i = 0; i <= 100; i++) {
+                const xB_liquid = i / 100;
+                
+                // Calculate boiling temperature for this composition
+                // Start with a temperature guess
+                let T = bpA * (1 - xB_liquid) + bpB * xB_liquid;
+                let pA = getVaporPressure(T, bpA);
+                let pB = getVaporPressure(T, bpB);
+                
+                // Iteratively find the temperature where total pressure equals system pressure
+                for (let iter = 0; iter < 10; iter++) {
+                    const { pTotal } = calculateVaporPressure(xB_liquid, pA, pB, deviationType);
+                    if (Math.abs(pTotal - systemPressure) < 0.1) break;
+                    
+                    // Adjust temperature
+                    if (pTotal < systemPressure) {
+                        T += 0.5;
+                    } else {
+                        T -= 0.5;
+                    }
+                    
+                    pA = getVaporPressure(T, bpA);
+                    pB = getVaporPressure(T, bpB);
+                }
+                
+                // Now calculate the vapor composition in equilibrium with this liquid
+                const { pPartialA, pPartialB } = calculateVaporPressure(xB_liquid, pA, pB, deviationType);
+                const xB_vapor = pPartialB / (pPartialA + pPartialB);
+                
+                // Convert to canvas coordinates
+                const x_liquid = padding + xB_liquid * (canvasWidth - 2 * padding);
+                const y_liquid = padding + (1 - (T - minTemp) / tempRange) * (canvasHeight - 2 * padding);
+                
+                const x_vapor = padding + xB_vapor * (canvasWidth - 2 * padding);
+                const y_vapor = y_liquid; // Same temperature
+                
+                liquidPoints.push({ x: x_liquid, y: y_liquid, xB: xB_liquid, temp: T });
+                vaporPoints.push({ x: x_vapor, y: y_vapor, xB: xB_vapor, temp: T });
+            }
+            
+            // Draw liquid curve
+            bpCtx.beginPath();
+            bpCtx.moveTo(liquidPoints[0].x, liquidPoints[0].y);
+            for (let i = 1; i < liquidPoints.length; i++) {
+                bpCtx.lineTo(liquidPoints[i].x, liquidPoints[i].y);
+            }
+            bpCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+            bpCtx.lineWidth = 2;
+            bpCtx.stroke();
+            
+            // Draw vapor curve
+            bpCtx.beginPath();
+            bpCtx.moveTo(vaporPoints[0].x, vaporPoints[0].y);
+            for (let i = 1; i < vaporPoints.length; i++) {
+                bpCtx.lineTo(vaporPoints[i].x, vaporPoints[i].y);
+            }
+            bpCtx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
+            bpCtx.lineWidth = 2;
+            bpCtx.stroke();
+            
+            // Add tie lines (optional)
+            bpCtx.setLineDash([2, 2]);
+            for (let i = 1; i < 10; i++) {
+                const index = i * 10;
+                bpCtx.beginPath();
+                bpCtx.moveTo(liquidPoints[index].x, liquidPoints[index].y);
+                bpCtx.lineTo(vaporPoints[index].x, vaporPoints[index].y);
+                bpCtx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                bpCtx.stroke();
+            }
+            bpCtx.setLineDash([]);
+            
+            // Store points for tooltip interaction
+            bpCanvas.liquidPoints = liquidPoints;
+            bpCanvas.vaporPoints = vaporPoints;
+            
+            // Update explanation
+            const explanation = document.getElementById('bp-explanation');
+            if (deviationType === 'ideal') {
+                explanation.innerHTML = `
+                    <p>This is an <strong>ideal</strong> boiling point diagram. The separation between the curves indicates how the vapor is enriched with the more volatile component.</p>
+                    <p>When a liquid with composition X is boiled, the resulting vapor will have composition Y, which is richer in the more volatile component.</p>
+                    <p>This principle forms the basis of <strong>distillation</strong>, allowing us to separate liquid mixtures.</p>
+                `;
+            } else if (deviationType === 'positive') {
+                explanation.innerHTML = `
+                    <p>This boiling point diagram shows <strong>positive deviation</strong> from Raoult's Law.</p>
+                    <p>Positive deviations often produce <strong>minimum boiling azeotropes</strong>, where the mixture boils at a temperature lower than either pure component.</p>
+                    <p>At the azeotropic composition, the liquid and vapor have the same composition, limiting the separation possible through simple distillation.</p>
+                `;
+            } else if (deviationType === 'negative') {
+                explanation.innerHTML = `
+                    <p>This boiling point diagram shows <strong>negative deviation</strong> from Raoult's Law.</p>
+                    <p>Negative deviations often produce <strong>maximum boiling azeotropes</strong>, where the mixture boils at a temperature higher than either pure component.</p>
+                    <p>Like minimum boiling azeotropes, these points create limitations in distillation processes when separating the components.</p>
+                `;
+            }
+        }
+        
+        // Event Listeners
+        function updateVaporChart() {
+            pressureA = parseFloat(document.getElementById('pressure-a').value);
+            pressureB = parseFloat(document.getElementById('pressure-b').value);
+            document.getElementById('pressure-a-value').textContent = pressureA;
+            document.getElementById('pressure-b-value').textContent = pressureB;
+            drawVaporPressureChart();
+        }
+        
+        function updateBPChart() {
+            bpA = parseFloat(document.getElementById('bp-a').value);
+            bpB = parseFloat(document.getElementById('bp-b').value);
+            systemPressure = parseFloat(document.getElementById('system-pressure').value);
+            document.getElementById('bp-a-value').textContent = bpA;
+            document.getElementById('bp-b-value').textContent = bpB;
+            document.getElementById('system-pressure-value').textContent = systemPressure;
+            drawBoilingPointChart();
+        }
+        
+        // Setup event listeners
+        document.getElementById('pressure-a').addEventListener('input', updateVaporChart);
+        document.getElementById('pressure-b').addEventListener('input', updateVaporChart);
+        document.getElementById('bp-a').addEventListener('input', updateBPChart);
+        document.getElementById('bp-b').addEventListener('input', updateBPChart);
+        document.getElementById('system-pressure').addEventListener('input', updateBPChart);
+        
+        document.getElementById('negative-deviation').addEventListener('click', () => {
+            deviationType = 'negative';
+            drawVaporPressureChart();
+        });
+        
+        document.getElementById('ideal-behavior').addEventListener('click', () => {
+            deviationType = 'ideal';
+            drawVaporPressureChart();
+        });
+        
+        document.getElementById('positive-deviation').addEventListener('click', () => {
+            deviationType = 'positive';
+            drawVaporPressureChart();
+        });
+        
+        document.getElementById('bp-negative-deviation').addEventListener('click', () => {
+            deviationType = 'negative';
+            drawBoilingPointChart();
+        });
+        
+        document.getElementById('bp-ideal-behavior').addEventListener('click', () => {
+            deviationType = 'ideal';
+            drawBoilingPointChart();
+        });
+        
+        document.getElementById('bp-positive-deviation').addEventListener('click', () => {
+            deviationType = 'positive';
+            drawBoilingPointChart();
+        });
+        
+        // Tooltips
+        const vaporTooltip = document.getElementById('vapor-tooltip');
+        const bpTooltip = document.getElementById('bp-tooltip');
+        
+        vaporCanvas.addEventListener('mousemove', (e) => {
+            const rect = vaporCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Find closest point
+            let minDist = Infinity;
+            let closestPoint = null;
+            
+            vaporCanvas.points.forEach(point => {
+                const dist = Math.sqrt(Math.pow(mouseX - point.x, 2) + Math.pow(mouseY - point.yTotal, 2));
+                if (dist < minDist && dist < 15) {
+                    minDist = dist;
+                    closestPoint = point;
+                }
+            });
+            
+            if (closestPoint) {
+                vaporTooltip.style.opacity = 1;
+                vaporTooltip.style.left = `${closestPoint.x}px`;
+                vaporTooltip.style.top = `${closestPoint.yTotal - 30}px`;
+                vaporTooltip.innerHTML = `
+                    xB: ${closestPoint.xB.toFixed(2)}<br>
+                    Total P: ${closestPoint.pTotal.toFixed(1)} mmHg<br>
+                    A: ${closestPoint.pPartialA.toFixed(1)} mmHg<br>
+                    B: ${closestPoint.pPartialB.toFixed(1)} mmHg
+                `;
+            } else {
+                vaporTooltip.style.opacity = 0;
+            }
+        });
+        
+        vaporCanvas.addEventListener('mouseout', () => {
+            vaporTooltip.style.opacity = 0;
+        });
+        
+        bpCanvas.addEventListener('mousemove', (e) => {
+            const rect = bpCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Find closest liquid point
+            let minDist = Infinity;
+            let closestLiquid = null;
+            let closestVapor = null;
+            
+            for (let i = 0; i < bpCanvas.liquidPoints.length; i++) {
+                const liquid = bpCanvas.liquidPoints[i];
+                const vapor = bpCanvas.vaporPoints[i];
+                
+                const liquidDist = Math.sqrt(Math.pow(mouseX - liquid.x, 2) + Math.pow(mouseY - liquid.y, 2));
+                const vaporDist = Math.sqrt(Math.pow(mouseX - vapor.x, 2) + Math.pow(mouseY - vapor.y, 2));
+                
+                if (liquidDist < minDist && liquidDist < 15) {
+                    minDist = liquidDist;
+                    closestLiquid = liquid;
+                    closestVapor = vapor;
+                } else if (vaporDist < minDist && vaporDist < 15) {
+                    minDist = vaporDist;
+                    closestLiquid = liquid;
+                    closestVapor = vapor;
+                }
+            }
+            
+            if (closestLiquid && closestVapor) {
+                bpTooltip.style.opacity = 1;
+                bpTooltip.style.left = `${closestLiquid.x}px`;
+                bpTooltip.style.top = `${closestLiquid.y - 30}px`;
+                bpTooltip.innerHTML = `
+                    Temperature: ${closestLiquid.temp.toFixed(1)}°C<br>
+                    Liquid xB: ${closestLiquid.xB.toFixed(2)}<br>
+                    Vapor xB: ${closestVapor.xB.toFixed(2)}
+                `;
+                
+                // Draw tie line
+                bpCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+                drawBoilingPointChart();
+                
+                bpCtx.beginPath();
+                bpCtx.moveTo(closestLiquid.x, closestLiquid.y);
+                bpCtx.lineTo(closestVapor.x, closestVapor.y);
+                bpCtx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+                bpCtx.lineWidth = 1.5;
+                bpCtx.setLineDash([4, 2]);
+                bpCtx.stroke();
+                bpCtx.setLineDash([]);
+                
+                // Highlight points
+                bpCtx.beginPath();
+                bpCtx.arc(closestLiquid.x, closestLiquid.y, 4, 0, Math.PI * 2);
+                bpCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--primary-color');
+                bpCtx.fill();
+                
+                bpCtx.beginPath();
+                bpCtx.arc(closestVapor.x, closestVapor.y, 4, 0, Math.PI * 2);
+                bpCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color');
+                bpCtx.fill();
+            } else {
+                bpTooltip.style.opacity = 0;
+            }
+        });
+        
+        bpCanvas.addEventListener('mouseout', () => {
+            bpTooltip.style.opacity = 0;
+            drawBoilingPointChart();
+        });
+        
+        // Initial draw
+        drawVaporPressureChart();
+        drawBoilingPointChart();
+    </script>
+</body>
+</html>

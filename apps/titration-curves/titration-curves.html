@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acid-Base Titration Simulator - Grade 12 - St. Mary High</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* General styles */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background-color: #f1f1f1;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    h1, h2 {
+      color: #333;
+      margin-top: 0;
+    }
+    
+    /* Controls section */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .control-group label {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    select, input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 200px;
+    }
+    
+    input[type="range"] {
+      width: 200px;
+    }
+    
+    /* Buttons */
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-start {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    .btn-start:hover:not(:disabled) {
+      background-color: #45a049;
+    }
+    
+    .btn-stop {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    .btn-stop:hover:not(:disabled) {
+      background-color: #d32f2f;
+    }
+    
+    .btn-reset {
+      background-color: #808080;
+      color: white;
+    }
+    
+    .btn-reset:hover {
+      background-color: #707070;
+    }
+    
+    .btn-add {
+      background-color: #2196F3;
+      color: white;
+    }
+    
+    .btn-add:hover:not(:disabled) {
+      background-color: #0b7dda;
+    }
+    
+    /* Main display area */
+    .display-area {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    @media (min-width: 768px) {
+      .display-area {
+        flex-direction: row;
+      }
+    }
+    
+    .flask-container, .graph-container {
+      flex: 1;
+      background-color: white;
+      padding: 16px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* Flask visualization */
+    .flask-visualization {
+      position: relative;
+      height: 256px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .flask {
+      position: relative;
+    }
+    
+    .flask-body {
+      width: 160px;
+      height: 160px;
+      border: 2px solid #888;
+      border-top: 0;
+      border-radius: 0 0 80px 80px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .flask-solution {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 75%;
+      border-radius: 0 0 80px 80px;
+      transition: background-color 0.5s;
+    }
+    
+    .flask-neck {
+      width: 64px;
+      height: 48px;
+      background-color: white;
+      border: 2px solid #888;
+      border-bottom: 0;
+      margin: 0 auto;
+    }
+    
+    .burette-tip {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100%);
+    }
+    
+    .burette-stem {
+      width: 8px;
+      height: 48px;
+      background-color: #bbb;
+      margin: 0 auto;
+    }
+    
+    .burette-end {
+      width: 16px;
+      height: 16px;
+      background-color: #bbb;
+      margin: -4px auto 0;
+      border-radius: 0 0 8px 8px;
+    }
+    
+    .drop {
+      width: 8px;
+      height: 8px;
+      background-color: #4dabf7;
+      border-radius: 50%;
+      margin: 0 auto;
+      animation: drop 1s infinite;
+    }
+    
+    @keyframes drop {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+    }
+    
+    .flask-info {
+      margin-top: 16px;
+    }
+    
+    .flask-info p {
+      margin: 8px 0;
+    }
+    
+    .equivalence-point {
+      color: #2e7d32;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+    
+    /* Graph */
+    .graph-container svg {
+      border: 1px solid #ddd;
+    }
+    
+    /* Instructions */
+    .instructions {
+      width: 100%;
+      margin-top: 24px;
+      background-color: white;
+      padding: 16px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    .instructions ul {
+      padding-left: 20px;
+    }
+    
+    .instructions li {
+      margin-bottom: 4px;
+    }
+    
+    .chem-info {
+      margin-top: 16px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Acid-Base Titration Simulator - St. Mary High - M. Cole</h1>
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+      <a href="/" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background-color: #4CAF50; color: white; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease;" title="Back to Dashboard">
+        <i class="fas fa-home" style="font-size: 20px;"></i>
+      </a>
+    </div>
+    
+    <!-- Simulation controls -->
+    <div class="controls">
+      <div class="control-group">
+        <label for="titration-type">Titration Type:</label>
+        <select id="titration-type">
+          <option value="strongAcidStrongBase">Strong Acid (HCl) + Strong Base (NaOH)</option>
+          <option value="weakAcidStrongBase">Weak Acid (CH₃COOH) + Strong Base (NaOH)</option>
+          <option value="strongAcidWeakBase">Strong Acid (HCl) + Weak Base (NH₃)</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="acid-concentration">Acid Concentration (M):</label>
+        <input type="number" id="acid-concentration" min="0.01" max="1.0" step="0.01" value="0.1">
+      </div>
+      
+      <div class="control-group">
+        <label for="base-concentration">Base Concentration (M):</label>
+        <input type="number" id="base-concentration" min="0.01" max="1.0" step="0.01" value="0.1">
+      </div>
+      
+      <div class="control-group">
+        <label for="titration-speed">Titration Speed:</label>
+        <input type="range" id="titration-speed" min="1" max="20" value="10">
+      </div>
+    </div>
+    
+    <!-- Action buttons -->
+    <div class="buttons">
+      <button id="btn-start" class="btn-start">Start</button>
+      <button id="btn-stop" class="btn-stop" disabled>Stop</button>
+      <button id="btn-reset" class="btn-reset">Reset</button>
+      <button id="btn-add-small" class="btn-add">Add 0.1 mL</button>
+      <button id="btn-add-large" class="btn-add">Add 1.0 mL</button>
+    </div>
+    
+    <!-- Main display area -->
+    <div class="display-area">
+      <!-- Left side: Flask visualization -->
+      <div class="flask-container">
+        <h2>Titration Flask</h2>
+        
+        <div class="flask-visualization">
+          <div class="flask">
+            <div class="flask-body">
+              <div class="flask-solution" id="solution"></div>
+            </div>
+            <div class="flask-neck"></div>
+            
+            <div class="burette-tip">
+              <div class="burette-stem"></div>
+              <div class="burette-end"></div>
+              <div class="drop" id="drop" style="display: none;"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flask-info">
+          <p><strong>Current pH:</strong> <span id="current-ph">0.00</span></p>
+          <p><strong>Base Added:</strong> <span id="base-added">0.0</span> mL</p>
+          <p><strong>Solution:</strong> <span id="solution-info">HCl (strong acid) + NaOH (strong base)</span></p>
+          <p id="equivalence-point-info" class="equivalence-point" style="display: none;"></p>
+        </div>
+      </div>
+      
+      <!-- Right side: Titration curve -->
+      <div class="graph-container">
+        <h2>Titration Curve</h2>
+        <svg id="titration-curve" width="400" height="300"></svg>
+        <div class="graph-info">
+          <p class="text-sm">
+            This graph shows the pH of the solution as a function of the volume of base added.
+            <span id="equivalence-line-info" style="display: none;"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="instructions">
+      <h2>Instructions & Information</h2>
+      <ul>
+        <li>Select the titration type and set acid/base concentrations (default: 0.1 M)</li>
+        <li>Click "Start" to run the simulation continuously or use the "Add" buttons for manual titration</li>
+        <li>The equivalence point is marked on the graph once reached</li>
+        <li>Solution color changes based on pH: red (acidic), purple (neutral), blue (basic)</li>
+        <li><strong>Strong Acid + Strong Base:</strong> Equivalence point at pH 7</li>
+        <li><strong>Weak Acid + Strong Base:</strong> Equivalence point at pH > 7 (basic)</li>
+        <li><strong>Strong Acid + Weak Base:</strong> Equivalence point at pH < 7 (acidic)</li>
+      </ul>
+      <div class="chem-info">
+        <p><strong>pKa Values:</strong> Ethanoic acid (CH₃COOH): 4.74</p>
+        <p><strong>pKb Values:</strong> Ammonia (NH₃): 4.74</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Constants
+    const KA_ETHANOIC = 1.8e-5; // Ka of ethanoic acid
+    const KB_AMMONIA = 1.8e-5; // Kb of ammonia
+    const KW = 1.0e-14; // Water dissociation constant
+
+    // State variables
+    let simulationType = 'strongAcidStrongBase';
+    let concentration = {
+      acid: 0.1, // mol/L
+      base: 0.1, // mol/L
+    };
+    let volume = {
+      acid: 25, // mL
+      base: 0, // mL (will be added during titration)
+    };
+    let running = false;
+    let speed = 10; // mL per second
+    let pH = 0;
+    let data = [];
+    let equivalencePoint = null;
+    let lastPoint = null;
+    let info = {
+      acid: 'HCl (strong acid)',
+      base: 'NaOH (strong base)',
+      color: '#f8f9fa'
+    };
+    let animationFrameId = null;
+    const baseAddedInterval = 0.1; // mL added per frame
+
+    // DOM elements
+    const titrationType = document.getElementById('titration-type');
+    const acidConcentration = document.getElementById('acid-concentration');
+    const baseConcentration = document.getElementById('base-concentration');
+    const titrationSpeed = document.getElementById('titration-speed');
+    const btnStart = document.getElementById('btn-start');
+    const btnStop = document.getElementById('btn-stop');
+    const btnReset = document.getElementById('btn-reset');
+    const btnAddSmall = document.getElementById('btn-add-small');
+    const btnAddLarge = document.getElementById('btn-add-large');
+    const solution = document.getElementById('solution');
+    const drop = document.getElementById('drop');
+    const currentPh = document.getElementById('current-ph');
+    const baseAdded = document.getElementById('base-added');
+    const solutionInfo = document.getElementById('solution-info');
+    const equivalencePointInfo = document.getElementById('equivalence-point-info');
+    const equivalenceLineInfo = document.getElementById('equivalence-line-info');
+    const titrationCurve = document.getElementById('titration-curve');
+
+    // SVG parameters
+    const svgWidth = 400;
+    const svgHeight = 300;
+    const padding = 40;
+    const xScale = (svgWidth - 2 * padding) / 50; // 50 mL max
+    const yScale = (svgHeight - 2 * padding) / 14; // pH 0-14
+
+    // Initialize the SVG
+    function initializeSVG() {
+      // Clear previous content
+      titrationCurve.innerHTML = '';
+      
+      // X and Y axes
+      appendSVGElement('line', {
+        x1: padding,
+        y1: svgHeight - padding,
+        x2: svgWidth - padding,
+        y2: svgHeight - padding,
+        stroke: 'black'
+      });
+      
+      appendSVGElement('line', {
+        x1: padding,
+        y1: padding,
+        x2: padding,
+        y2: svgHeight - padding,
+        stroke: 'black'
+      });
+      
+      // X-axis labels
+      appendSVGElement('text', {
+        x: svgWidth / 2,
+        y: svgHeight - 2,
+        'text-anchor': 'middle',
+        textContent: 'Volume of Base Added (mL)'
+      });
+      
+      [0, 10, 20, 30, 40, 50].forEach(v => {
+        appendSVGElement('line', {
+          x1: padding + v * xScale,
+          y1: svgHeight - padding,
+          x2: padding + v * xScale,
+          y2: svgHeight - padding + 5,
+          stroke: 'black'
+        });
+        
+        appendSVGElement('text', {
+          x: padding + v * xScale,
+          y: svgHeight - padding + 20,
+          'text-anchor': 'middle',
+          'font-size': '12',
+          textContent: v.toString()
+        });
+      });
+      
+      // Y-axis labels
+      appendSVGElement('text', {
+        x: 15,
+        y: svgHeight / 2,
+        'text-anchor': 'middle',
+        transform: `rotate(-90, 15, ${svgHeight / 2})`,
+        textContent: 'pH'
+      });
+      
+      [0, 2, 4, 6, 8, 10, 12, 14].forEach(v => {
+        appendSVGElement('line', {
+          x1: padding - 5,
+          y1: svgHeight - padding - v * yScale,
+          x2: padding,
+          y2: svgHeight - padding - v * yScale,
+          stroke: 'black'
+        });
+        
+        appendSVGElement('text', {
+          x: padding - 10,
+          y: svgHeight - padding - v * yScale + 5,
+          'text-anchor': 'end',
+          'font-size': '12',
+          textContent: v.toString()
+        });
+      });
+    }
+
+    // Helper function to create SVG elements
+    function appendSVGElement(type, attributes) {
+      const element = document.createElementNS('http://www.w3.org/2000/svg', type);
+      for (const [key, value] of Object.entries(attributes)) {
+        if (key === 'textContent') {
+          element.textContent = value;
+        } else {
+          element.setAttribute(key, value);
+        }
+      }
+      titrationCurve.appendChild(element);
+      return element;
+    }
+
+    // Set up initial state
+    function initialize() {
+      volume = { acid: 25, base: 0 };
+      data = [];
+      pH = 0;
+      equivalencePoint = null;
+      lastPoint = null;
+      
+      updateTitrationType();
+      updateDisplay();
+      initializeSVG();
+      
+      // Add initial data point
+      const initialPH = calculatePH(volume.acid, 0);
+      pH = initialPH;
+      data = [{ volume: 0, pH: initialPH }];
+      lastPoint = { volume: 0, pH: initialPH };
+      
+      updateDisplay();
+      updateGraph();
+    }
+
+    // Update titration type and info
+    function updateTitrationType() {
+      switch (simulationType) {
+        case 'strongAcidStrongBase':
+          info = {
+            acid: 'HCl (strong acid)',
+            base: 'NaOH (strong base)',
+            color: '#f8f9fa'
+          };
+          break;
+        case 'weakAcidStrongBase':
+          info = {
+            acid: 'CH₃COOH (weak acid)',
+            base: 'NaOH (strong base)',
+            color: '#f8f9fa'
+          };
+          break;
+        case 'strongAcidWeakBase':
+          info = {
+            acid: 'HCl (strong acid)',
+            base: 'NH₃ (weak base)',
+            color: '#f8f9fa'
+          };
+          break;
+      }
+      
+      solutionInfo.textContent = `${info.acid} + ${info.base}`;
+    }
+
+    // Calculate pH based on titration type and volumes
+    function calculatePH(acidVol, baseVol) {
+      const nAcid = (acidVol / 1000) * concentration.acid; // moles of acid
+      const nBase = (baseVol / 1000) * concentration.base; // moles of base
+      const totalVolume = (acidVol + baseVol) / 1000; // total volume in L
+
+      // Different calculations based on titration type
+      switch (simulationType) {
+        case 'strongAcidStrongBase': // HCl + NaOH
+          if (nAcid > nBase) {
+            // Excess acid
+            const excessH = nAcid - nBase;
+            const cH = excessH / totalVolume;
+            return -Math.log10(cH);
+          } else if (nAcid < nBase) {
+            // Excess base
+            const excessOH = nBase - nAcid;
+            const cOH = excessOH / totalVolume;
+            const cH = KW / cOH;
+            return -Math.log10(cH);
+          } else {
+            // Equivalence point for strong acid-strong base is pH 7
+            return 7;
+          }
+
+        case 'weakAcidStrongBase': // CH3COOH + NaOH
+          if (nAcid > nBase) {
+            // Before equivalence point: buffer region if some base has been added
+            if (baseVol > 0) {
+              const cHA = (nAcid - nBase) / totalVolume; // unreacted acid concentration
+              const cA = nBase / totalVolume; // conjugate base concentration
+              return -Math.log10(KA_ETHANOIC) + Math.log10(cA / cHA);
+            } else {
+              // Initial pH of weak acid solution
+              const cHA = nAcid / totalVolume;
+              return -Math.log10(Math.sqrt(KA_ETHANOIC * cHA));
+            }
+          } else if (nAcid < nBase) {
+            // Excess strong base
+            const excessOH = nBase - nAcid;
+            const cOH = excessOH / totalVolume;
+            const cH = KW / cOH;
+            return -Math.log10(cH);
+          } else {
+            // Equivalence point: hydrolysis of acetate ion
+            const cA = nAcid / totalVolume; // all acid converted to conjugate base
+            const cOH = Math.sqrt(KW * cA / KA_ETHANOIC);
+            const cH = KW / cOH;
+            return -Math.log10(cH);
+          }
+
+        case 'strongAcidWeakBase': // HCl + NH3
+          if (nAcid > nBase) {
+            // Excess strong acid
+            const excessH = nAcid - nBase;
+            const cH = excessH / totalVolume;
+            return -Math.log10(cH);
+          } else if (nAcid < nBase) {
+            // After equivalence point: buffer region with excess weak base
+            const cB = (nBase - nAcid) / totalVolume; // unreacted base concentration
+            const cBH = nAcid / totalVolume; // conjugate acid concentration
+            const cOH = KB_AMMONIA * cB / cBH;
+            const cH = KW / cOH;
+            return -Math.log10(cH);
+          } else {
+            // Equivalence point: hydrolysis of ammonium ion
+            const cBH = nAcid / totalVolume; // all base converted to conjugate acid
+            const cH = Math.sqrt(KW * cBH / KB_AMMONIA);
+            return -Math.log10(cH);
+          }
+
+        default:
+          return 7;
+      }
+    }
+
+    // Calculate equivalence point
+    function calculateEquivalencePoint() {
+      // Equivalence point occurs when moles of acid = moles of base
+      const molesAcid = (volume.acid / 1000) * concentration.acid;
+      const baseVolume = (molesAcid / concentration.base) * 1000;
+      return baseVolume;
+    }
+
+    // Get color based on pH
+    function getSolutionColor(pH) {
+      // Red for acidic, purple for neutral, blue for basic
+      if (pH < 4) return '#ff7f7f'; // Strong acid - red
+      if (pH < 6) return '#ffb997'; // Weak acid - light red/orange
+      if (pH >= 6 && pH <= 8) return '#da70d6'; // Near neutral - purple
+      if (pH > 8 && pH < 11) return '#a1caf1'; // Weak base - light blue
+      return '#7fb3ff'; // Strong base - blue
+    }
+
+    // Update the display
+    function updateDisplay() {
+      currentPh.textContent = pH.toFixed(2);
+      baseAdded.textContent = volume.base.toFixed(1);
+      solution.style.backgroundColor = info.color;
+      
+      // Check if we've reached equivalence point
+      const eqPoint = calculateEquivalencePoint();
+      if (volume.base >= eqPoint && !equivalencePoint) {
+        equivalencePoint = eqPoint;
+        equivalencePointInfo.textContent = `Equivalence Point Reached at ${equivalencePoint.toFixed(1)} mL!`;
+        equivalencePointInfo.style.display = 'block';
+        equivalenceLineInfo.textContent = ` The vertical red line indicates the equivalence point at ${equivalencePoint.toFixed(1)} mL.`;
+        equivalenceLineInfo.style.display = 'inline';
+        
+        // Add equivalence point line to graph
+        appendSVGElement('line', {
+          x1: padding + equivalencePoint * xScale,
+          y1: padding,
+          x2: padding + equivalencePoint * xScale,
+          y2: svgHeight - padding,
+          stroke: 'red',
+          'stroke-dasharray': '4'
+        });
+      }
+      
+      // Update drop animation
+      if (running) {
+        drop.style.display = 'block';
+      } else {
+        drop.style.display = 'none';
+      }
+    }
+
+    // Update the graph
+    function updateGraph() {
+      // Remove old path and point
+      const oldPath = titrationCurve.querySelector('path');
+      if (oldPath) oldPath.remove();
+      
+      const oldPoint = titrationCurve.querySelector('circle');
+      if (oldPoint) oldPoint.remove();
+      
+      // Create new path
+      if (data.length >= 2) {
+        const pathData = data.map((point, i) => {
+          const x = padding + point.volume * xScale;
+          const y = svgHeight - padding - point.pH * yScale;
+          return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+        }).join(' ');
+        
+        appendSVGElement('path', {
+          d: pathData,
+          fill: 'none',
+          stroke: 'blue',
+          'stroke-width': '2'
+        });
+      }
+      
+      // Add current point
+      if (lastPoint) {
+        appendSVGElement('circle', {
+          cx: padding + lastPoint.volume * xScale,
+          cy: svgHeight - padding - lastPoint.pH * yScale,
+          r: '4',
+          fill: 'red'
+        });
+      }
+    }
+
+    // Animation loop
+    function animate() {
+      if (running) {
+        const newBaseVolume = Math.min(volume.base + baseAddedInterval * speed, 50);
+        
+        // Stop if we've reached the limit
+        if (newBaseVolume >= 50) {
+          running = false;
+          btnStart.disabled = false;
+          btnStop.disabled = true;
+          drop.style.display = 'none';
+        }
+        
+        volume.base = newBaseVolume;
+        
+        // Calculate new pH
+        pH = calculatePH(volume.acid, volume.base);
+        info.color = getSolutionColor(pH);
+        
+        // Add data point
+        data.push({ volume: volume.base, pH });
+        lastPoint = { volume: volume.base, pH };
+        
+        // Update display
+        updateDisplay();
+        updateGraph();
+        
+        // Continue animation
+        if (running) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      }
+    }
+
+    // Event handlers
+    btnStart.addEventListener('click', () => {
+      running = true;
+      btnStart.disabled = true;
+      btnStop.disabled = false;
+      btnAddSmall.disabled = true;
+      btnAddLarge.disabled = true;
+      titrationType.disabled = true;
+      acidConcentration.disabled = true;
+      baseConcentration.disabled = true;
+      
+      animationFrameId = requestAnimationFrame(animate);
+    });
+
+    btnStop.addEventListener('click', () => {
+      running = false;
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      btnAddSmall.disabled = false;
+      btnAddLarge.disabled = false;
+      titrationType.disabled = false;
+      acidConcentration.disabled = false;
+      baseConcentration.disabled = false;
+      
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      drop.style.display = 'none';
+    });
+
+    btnReset.addEventListener('click', () => {
+      running = false;
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+      btnAddSmall.disabled = false;
+      btnAddLarge.disabled = false;
+      titrationType.disabled = false;
+      acidConcentration.disabled = false;
+      baseConcentration.disabled = false;
+      
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      drop.style.display = 'none';
+      equivalencePointInfo.style.display = 'none';
+      equivalenceLineInfo.style.display = 'none';
+      
+      initialize();
+    });
+
+    btnAddSmall.addEventListener('click', () => {
+      addBase(0.1);
+    });
+
+    btnAddLarge.addEventListener('click', () => {
+      addBase(1.0);
+    });
+
+    titrationType.addEventListener('change', () => {
+      simulationType = titrationType.value;
+      initialize();
+    });
+
+    acidConcentration.addEventListener('change', () => {
+      concentration.acid = parseFloat(acidConcentration.value);
+      initialize();
+    });
+
+    baseConcentration.addEventListener('change', () => {
+      concentration.base = parseFloat(baseConcentration.value);
+      initialize();
+    });
+
+    titrationSpeed.addEventListener('input', () => {
+      speed = parseInt(titrationSpeed.value);
+    });
+
+    // Function to add base manually
+    function addBase(amount) {
+      const newBaseVolume = Math.min(volume.base + amount, 50);
+      volume.base = newBaseVolume;
+      
+      // Calculate new pH
+      pH = calculatePH(volume.acid, volume.base);
+      info.color = getSolutionColor(pH);
+      
+      // Add data point
+      data.push({ volume: volume.base, pH });
+      lastPoint = { volume: volume.base, pH };
+      
+      // Update display
+      updateDisplay();
+      updateGraph();
+      
+      // Disable buttons if we've reached the limit
+      if (volume.base >= 50) {
+        btnStart.disabled = true;
+        btnAddSmall.disabled = true;
+        btnAddLarge.disabled = true;
+      }
+    }
+
+    // Initialize the simulator
+    initialize();
+  </script>
+</body>
+</html>

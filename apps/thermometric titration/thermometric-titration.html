@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermometric Titration Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            height: fit-content;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.9em;
+        }
+
+        input[type="number"] {
+            width: 120px;
+            padding: 8px 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        canvas {
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            cursor: crosshair;
+        }
+
+        .info-panel {
+            background: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-panel h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .equivalence-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .stat {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 0.8em;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .status-bar {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 30px;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                order: 2;
+            }
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .export-buttons button {
+            flex: 1;
+            font-size: 0.8em;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Thermometric Titration Simulator</h1>
+            <p>Interactive simulation of strong acid-strong base thermometric titration</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Acid Solution</h3>
+                    <div class="input-row">
+                        <label>Concentration (M):</label>
+                        <input type="number" id="acidConc" value="0.1" step="0.01" min="0.01" max="2">
+                    </div>
+                    <div class="input-row">
+                        <label>Volume (mL):</label>
+                        <input type="number" id="acidVol" value="100" step="1" min="50" max="500">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Base Solution</h3>
+                    <div class="input-row">
+                        <label>Concentration (M):</label>
+                        <input type="number" id="baseConc" value="0.1" step="0.01" min="0.01" max="2">
+                    </div>
+                    <div class="input-row">
+                        <label>Increment (mL):</label>
+                        <input type="number" id="increment" value="5" step="1" min="1" max="20">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Environmental</h3>
+                    <div class="input-row">
+                        <label>Initial Temp (°C):</label>
+                        <input type="number" id="initialTemp" value="25" step="0.1" min="15" max="35">
+                    </div>
+                    <div class="input-row">
+                        <label>Heat Loss Factor:</label>
+                        <input type="number" id="heatLoss" value="0.95" step="0.01" min="0.8" max="1.0">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" onclick="runTitration()">Run Titration</button>
+                    <button class="btn-secondary" onclick="clearGraph()">Clear</button>
+                </div>
+
+                <div class="export-buttons">
+                    <button class="btn-success" onclick="exportImage()">Export PNG</button>
+                    <button class="btn-success" onclick="exportCSV()">Export CSV</button>
+                </div>
+
+                <div class="info-panel">
+                    <h4>Equivalence Point Information</h4>
+                    <div class="equivalence-info">
+                        <div class="stat">
+                            <div class="stat-label">Volume (mL)</div>
+                            <div class="stat-value" id="eqVolume">-</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Temperature (°C)</div>
+                            <div class="stat-value" id="eqTemp">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-container">
+                <canvas id="graph" width="800" height="600"></canvas>
+                <div class="tooltip" id="tooltip"></div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>Data Points</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>Pre-equivalence Fit</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f39c12;"></div>
+                        <span>Post-equivalence Fit</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60; height: 2px; border: 1px dashed #27ae60;"></div>
+                        <span>Equivalence Point</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="status">Ready to run titration</span>
+            <span id="dataPoints">Data points: 0</span>
+        </div>
+    </div>
+
+    <script>
+        class ThermometricTitrationSimulator {
+            constructor() {
+                this.canvas = document.getElementById('graph');
+                this.ctx = this.canvas.getContext('2d');
+                this.dataPoints = [];
+                this.equivalencePoint = null;
+                this.preEqFit = null;
+                this.postEqFit = null;
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+            }
+
+            setupCanvas() {
+                // High DPI support
+                const rect = this.canvas.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                this.canvas.width = rect.width * dpr;
+                this.canvas.height = rect.height * dpr;
+                this.ctx.scale(dpr, dpr);
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+                
+                this.plotArea = {
+                    x: 80,
+                    y: 50,
+                    width: 680,
+                    height: 450
+                };
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+            }
+
+            calculateTitrationCurve() {
+                const acidConc = parseFloat(document.getElementById('acidConc').value);
+                const acidVol = parseFloat(document.getElementById('acidVol').value);
+                const baseConc = parseFloat(document.getElementById('baseConc').value);
+                const increment = parseFloat(document.getElementById('increment').value);
+                const initialTemp = parseFloat(document.getElementById('initialTemp').value);
+                const heatLossFactor = parseFloat(document.getElementById('heatLoss').value);
+
+                this.dataPoints = [];
+                
+                // Calculate equivalence point
+                const equivalenceVolume = (acidConc * acidVol) / baseConc;
+                
+                // Constants for thermometric calculations
+                const deltaH = -57000; // J/mol (enthalpy of neutralization)
+                const specificHeat = 4.18; // J/g°C
+                const density = 1.0; // g/mL (assuming dilute aqueous solution)
+                
+                let currentTemp = initialTemp;
+                let totalVolume = acidVol;
+                
+                // Generate data points
+                for (let baseVol = 0; baseVol <= equivalenceVolume * 2; baseVol += increment) {
+                    const molesAcid = (acidConc * acidVol) / 1000;
+                    const molesBase = (baseConc * baseVol) / 1000;
+                    
+                    let molesReacted, excessHeat = 0;
+                    
+                    if (baseVol === 0) {
+                        currentTemp = initialTemp;
+                    } else {
+                        // Calculate moles reacted in this increment
+                        const incrementMoles = (baseConc * increment) / 1000;
+                        
+                        if (molesBase <= molesAcid) {
+                            // Before equivalence point
+                            molesReacted = incrementMoles;
+                        } else if (molesBase - incrementMoles < molesAcid) {
+                            // Crossing equivalence point
+                            molesReacted = molesAcid - (molesBase - incrementMoles);
+                        } else {
+                            // After equivalence point (dilution effect)
+                            molesReacted = 0;
+                            // Heat of dilution effect (much smaller)
+                            excessHeat = -incrementMoles * 1000; // Small dilution heat
+                        }
+                        
+                        // Calculate temperature change
+                        const heatReleased = (molesReacted * Math.abs(deltaH) + excessHeat) * heatLossFactor;
+                        const totalMass = (totalVolume + baseVol) * density;
+                        const tempIncrease = heatReleased / (totalMass * specificHeat);
+                        
+                        if (baseVol <= equivalenceVolume) {
+                            currentTemp += tempIncrease;
+                        } else {
+                            // After equivalence point, temperature starts to decrease due to dilution
+                            const dilutionFactor = totalVolume / (totalVolume + baseVol);
+                            currentTemp = initialTemp + (currentTemp - initialTemp) * dilutionFactor - 
+                                         (baseVol - equivalenceVolume) * 0.05; // Cooling due to excess base
+                        }
+                    }
+                    
+                    this.dataPoints.push({
+                        volume: baseVol,
+                        temperature: Math.max(currentTemp, initialTemp - 5) // Prevent unrealistic low temperatures
+                    });
+                }
+                
+                this.equivalencePoint = {
+                    volume: equivalenceVolume,
+                    temperature: this.interpolateTemperature(equivalenceVolume)
+                };
+                
+                this.calculateBestFitLines();
+                this.updateEquivalenceInfo();
+            }
+
+            interpolateTemperature(volume) {
+                for (let i = 0; i < this.dataPoints.length - 1; i++) {
+                    if (volume >= this.dataPoints[i].volume && volume <= this.dataPoints[i + 1].volume) {
+                        const ratio = (volume - this.dataPoints[i].volume) / 
+                                    (this.dataPoints[i + 1].volume - this.dataPoints[i].volume);
+                        return this.dataPoints[i].temperature + 
+                               ratio * (this.dataPoints[i + 1].temperature - this.dataPoints[i].temperature);
+                    }
+                }
+                return this.dataPoints[0].temperature;
+            }
+
+            calculateBestFitLines() {
+                const eqIndex = this.dataPoints.findIndex(p => p.volume >= this.equivalencePoint.volume);
+                
+                // Pre-equivalence points (ascending)
+                const prePoints = this.dataPoints.slice(0, Math.max(eqIndex, 3));
+                this.preEqFit = this.linearRegression(prePoints);
+                
+                // Post-equivalence points (descending)
+                const postPoints = this.dataPoints.slice(Math.min(eqIndex - 1, this.dataPoints.length - 3));
+                this.postEqFit = this.linearRegression(postPoints);
+            }
+
+            linearRegression(points) {
+                const n = points.length;
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                
+                points.forEach(point => {
+                    sumX += point.volume;
+                    sumY += point.temperature;
+                    sumXY += point.volume * point.temperature;
+                    sumXX += point.volume * point.volume;
+                });
+                
+                const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+                
+                return { slope, intercept };
+            }
+
+            drawGraph() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                if (this.dataPoints.length === 0) {
+                    this.drawEmptyGraph();
+                    return;
+                }
+                
+                this.drawAxes();
+                this.drawGrid();
+                this.drawBestFitLines();
+                this.drawDataPoints();
+                this.drawEquivalencePoint();
+                this.drawLabels();
+            }
+
+            drawEmptyGraph() {
+                this.ctx.strokeStyle = '#bdc3c7';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(this.plotArea.x, this.plotArea.y, this.plotArea.width, this.plotArea.height);
+                
+                this.ctx.fillStyle = '#7f8c8d';
+                this.ctx.font = '16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Click "Run Titration" to generate data', 
+                                this.plotArea.x + this.plotArea.width/2, 
+                                this.plotArea.y + this.plotArea.height/2);
+            }
+
+            drawAxes() {
+                this.ctx.strokeStyle = '#2c3e50';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                // X-axis
+                this.ctx.moveTo(this.plotArea.x, this.plotArea.y + this.plotArea.height);
+                this.ctx.lineTo(this.plotArea.x + this.plotArea.width, this.plotArea.y + this.plotArea.height);
+                // Y-axis
+                this.ctx.moveTo(this.plotArea.x, this.plotArea.y);
+                this.ctx.lineTo(this.plotArea.x, this.plotArea.y + this.plotArea.height);
+                this.ctx.stroke();
+            }
+
+            drawGrid() {
+                this.ctx.strokeStyle = '#ecf0f1';
+                this.ctx.lineWidth = 1;
+                
+                const { minVol, maxVol, minTemp, maxTemp } = this.getDataRanges();
+                
+                // Vertical grid lines
+                for (let i = 1; i < 10; i++) {
+                    const x = this.plotArea.x + (i * this.plotArea.width / 10);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, this.plotArea.y);
+                    this.ctx.lineTo(x, this.plotArea.y + this.plotArea.height);
+                    this.ctx.stroke();
+                }
+                
+                // Horizontal grid lines
+                for (let i = 1; i < 8; i++) {
+                    const y = this.plotArea.y + (i * this.plotArea.height / 8);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.plotArea.x, y);
+                    this.ctx.lineTo(this.plotArea.x + this.plotArea.width, y);
+                    this.ctx.stroke();
+                }
+            }
+
+            drawBestFitLines() {
+                if (!this.preEqFit || !this.postEqFit) return;
+                
+                const { minVol, maxVol } = this.getDataRanges();
+                
+                // Pre-equivalence fit line (blue)
+                this.ctx.strokeStyle = '#3498db';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                const preStart = this.volumeToX(minVol);
+                const preEnd = this.volumeToX(this.equivalencePoint.volume);
+                const preStartY = this.temperatureToY(this.preEqFit.slope * minVol + this.preEqFit.intercept);
+                const preEndY = this.temperatureToY(this.preEqFit.slope * this.equivalencePoint.volume + this.preEqFit.intercept);
+                this.ctx.moveTo(preStart, preStartY);
+                this.ctx.lineTo(preEnd, preEndY);
+                this.ctx.stroke();
+                
+                // Post-equivalence fit line (orange)
+                this.ctx.strokeStyle = '#f39c12';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                const postStart = this.volumeToX(this.equivalencePoint.volume);
+                const postEnd = this.volumeToX(maxVol);
+                const postStartY = this.temperatureToY(this.postEqFit.slope * this.equivalencePoint.volume + this.postEqFit.intercept);
+                const postEndY = this.temperatureToY(this.postEqFit.slope * maxVol + this.postEqFit.intercept);
+                this.ctx.moveTo(postStart, postStartY);
+                this.ctx.lineTo(postEnd, postEndY);
+                this.ctx.stroke();
+            }
+
+            drawDataPoints() {
+                this.ctx.fillStyle = '#e74c3c';
+                this.ctx.strokeStyle = '#c0392b';
+                this.ctx.lineWidth = 2;
+                
+                this.dataPoints.forEach(point => {
+                    const x = this.volumeToX(point.volume);
+                    const y = this.temperatureToY(point.temperature);
+                    
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                });
+            }
+
+            drawEquivalencePoint() {
+                if (!this.equivalencePoint) return;
+                
+                const x = this.volumeToX(this.equivalencePoint.volume);
+                
+                // Vertical dashed line
+                this.ctx.strokeStyle = '#27ae60';
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, this.plotArea.y);
+                this.ctx.lineTo(x, this.plotArea.y + this.plotArea.height);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                
+                // Equivalence point marker
+                const y = this.temperatureToY(this.equivalencePoint.temperature);
+                this.ctx.fillStyle = '#27ae60';
+                this.ctx.strokeStyle = '#229954';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+
+            drawLabels() {
+                this.ctx.fillStyle = '#2c3e50';
+                this.ctx.font = '14px Arial';
+                this.ctx.textAlign = 'center';
+                
+                // X-axis label
+                this.ctx.fillText('Volume of Base Added (mL)', 
+                                this.plotArea.x + this.plotArea.width/2, 
+                                this.plotArea.y + this.plotArea.height + 40);
+                
+                // Y-axis label (rotated)
+                this.ctx.save();
+                this.ctx.translate(20, this.plotArea.y + this.plotArea.height/2);
+                this.ctx.rotate(-Math.PI/2);
+                this.ctx.fillText('Temperature (°C)', 0, 0);
+                this.ctx.restore();
+                
+                // Axis tick labels
+                this.drawTickLabels();
+            }
+
+            drawTickLabels() {
+                if (this.dataPoints.length === 0) return;
+                
+                const { minVol, maxVol, minTemp, maxTemp } = this.getDataRanges();
+                
+                this.ctx.fillStyle = '#34495e';
+                this.ctx.font = '12px Arial';
+                
+                // X-axis ticks
+                this.ctx.textAlign = 'center';
+                for (let i = 0; i <= 10; i++) {
+                    const vol = minVol + (i * (maxVol - minVol) / 10);
+                    const x = this.plotArea.x + (i * this.plotArea.width / 10);
+                    const y = this.plotArea.y + this.plotArea.height + 15;
+                    this.ctx.fillText(vol.toFixed(1), x, y);
+                }
+                
+                // Y-axis ticks
+                this.ctx.textAlign = 'right';
+                for (let i = 0; i <= 8; i++) {
+                    const temp = maxTemp - (i * (maxTemp - minTemp) / 8);
+                    const x = this.plotArea.x - 10;
+                    const y = this.plotArea.y + (i * this.plotArea.height / 8) + 5;
+                    this.ctx.fillText(temp.toFixed(1), x, y);
+                }
+            }
+
+            getDataRanges() {
+                if (this.dataPoints.length === 0) return { minVol: 0, maxVol: 100, minTemp: 20, maxTemp: 40 };
+                
+                const volumes = this.dataPoints.map(p => p.volume);
+                const temperatures = this.dataPoints.map(p => p.temperature);
+                
+                return {
+                    minVol: Math.min(...volumes),
+                    maxVol: Math.max(...volumes),
+                    minTemp: Math.min(...temperatures) - 2,
+                    maxTemp: Math.max(...temperatures) + 2
+                };
+            }
+
+            volumeToX(volume) {
+                const { minVol, maxVol } = this.getDataRanges();
+                return this.plotArea.x + ((volume - minVol) / (maxVol - minVol)) * this.plotArea.width;
+            }
+
+            temperatureToY(temperature) {
+                const { minTemp, maxTemp } = this.getDataRanges();
+                return this.plotArea.y + this.plotArea.height - ((temperature - minTemp) / (maxTemp - minTemp)) * this.plotArea.height;
+            }
+
+            xToVolume(x) {
+                const { minVol, maxVol } = this.getDataRanges();
+                return minVol + ((x - this.plotArea.x) / this.plotArea.width) * (maxVol - minVol);
+            }
+
+            yToTemperature(y) {
+                const { minTemp, maxTemp } = this.getDataRanges();
+                return maxTemp - ((y - this.plotArea.y) / this.plotArea.height) * (maxTemp - minTemp);
+            }
+
+            handleMouseMove(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x >= this.plotArea.x && x <= this.plotArea.x + this.plotArea.width &&
+                    y >= this.plotArea.y && y <= this.plotArea.y + this.plotArea.height) {
+                    
+                    const volume = this.xToVolume(x);
+                    const temperature = this.yToTemperature(y);
+                    
+                    this.showTooltip(e.clientX, e.clientY, volume, temperature);
+                } else {
+                    this.hideTooltip();
+                }
+            }
+
+            showTooltip(x, y, volume, temperature) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.innerHTML = `Volume: ${volume.toFixed(2)} mL<br>Temperature: ${temperature.toFixed(2)} °C`;
+                tooltip.style.left = (x + 10) + 'px';
+                tooltip.style.top = (y - 10) + 'px';
+                tooltip.style.opacity = '1';
+            }
+
+            hideTooltip() {
+                document.getElementById('tooltip').style.opacity = '0';
+            }
+
+            updateEquivalenceInfo() {
+                if (this.equivalencePoint) {
+                    document.getElementById('eqVolume').textContent = this.equivalencePoint.volume.toFixed(2);
+                    document.getElementById('eqTemp').textContent = this.equivalencePoint.temperature.toFixed(2);
+                } else {
+                    document.getElementById('eqVolume').textContent = '-';
+                    document.getElementById('eqTemp').textContent = '-';
+                }
+            }
+
+            updateStatus(message) {
+                document.getElementById('status').textContent = message;
+                document.getElementById('dataPoints').textContent = `Data points: ${this.dataPoints.length}`;
+            }
+
+            exportImage() {
+                const link = document.createElement('a');
+                link.download = 'thermometric_titration.png';
+                link.href = this.canvas.toDataURL();
+                link.click();
+            }
+
+            exportCSV() {
+                if (this.dataPoints.length === 0) {
+                    alert('No data to export. Please run a titration first.');
+                    return;
+                }
+
+                let csv = 'Volume (mL),Temperature (°C),Notes\n';
+                
+                this.dataPoints.forEach(point => {
+                    let notes = '';
+                    if (Math.abs(point.volume - this.equivalencePoint.volume) < 0.1) {
+                        notes = 'Near Equivalence Point';
+                    }
+                    csv += `${point.volume.toFixed(2)},${point.temperature.toFixed(3)},${notes}\n`;
+                });
+
+                // Add equivalence point info
+                csv += `\nEquivalence Point Information:\n`;
+                csv += `Volume at Equivalence,${this.equivalencePoint.volume.toFixed(2)}\n`;
+                csv += `Temperature at Equivalence,${this.equivalencePoint.temperature.toFixed(2)}\n`;
+                
+                // Add best fit line parameters
+                if (this.preEqFit && this.postEqFit) {
+                    csv += `\nBest Fit Line Parameters:\n`;
+                    csv += `Pre-equivalence Slope,${this.preEqFit.slope.toFixed(4)}\n`;
+                    csv += `Pre-equivalence Intercept,${this.preEqFit.intercept.toFixed(4)}\n`;
+                    csv += `Post-equivalence Slope,${this.postEqFit.slope.toFixed(4)}\n`;
+                    csv += `Post-equivalence Intercept,${this.postEqFit.intercept.toFixed(4)}\n`;
+                }
+
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'thermometric_titration_data.csv';
+                link.click();
+            }
+
+            clear() {
+                this.dataPoints = [];
+                this.equivalencePoint = null;
+                this.preEqFit = null;
+                this.postEqFit = null;
+                this.drawGraph();
+                this.updateEquivalenceInfo();
+                this.updateStatus('Graph cleared');
+            }
+        }
+
+        // Initialize simulator
+        let simulator;
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            simulator = new ThermometricTitrationSimulator();
+            simulator.drawGraph();
+            simulator.updateStatus('Ready to run titration');
+        });
+
+        // Global functions for buttons
+        function runTitration() {
+            try {
+                simulator.updateStatus('Calculating titration curve...');
+                simulator.calculateTitrationCurve();
+                simulator.drawGraph();
+                simulator.updateStatus('Titration complete');
+                
+                // Add some educational information
+                const acidConc = parseFloat(document.getElementById('acidConc').value);
+                const acidVol = parseFloat(document.getElementById('acidVol').value);
+                const baseConc = parseFloat(document.getElementById('baseConc').value);
+                
+                const theoreticalVol = (acidConc * acidVol) / baseConc;
+                console.log(`Theoretical equivalence volume: ${theoreticalVol.toFixed(2)} mL`);
+                console.log(`Actual equivalence volume: ${simulator.equivalencePoint.volume.toFixed(2)} mL`);
+                console.log(`Maximum temperature: ${Math.max(...simulator.dataPoints.map(p => p.temperature)).toFixed(2)} °C`);
+                
+            } catch (error) {
+                simulator.updateStatus('Error in calculation');
+                console.error('Calculation error:', error);
+                alert('Error in calculation. Please check your input values.');
+            }
+        }
+
+        function clearGraph() {
+            simulator.clear();
+        }
+
+        function exportImage() {
+            simulator.exportImage();
+        }
+
+        function exportCSV() {
+            simulator.exportCSV();
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        runTitration();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        exportImage();
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        exportCSV();
+                        break;
+                }
+            }
+        });
+
+        // Add input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                const min = parseFloat(e.target.min);
+                const max = parseFloat(e.target.max);
+                
+                if (value < min) {
+                    e.target.style.borderColor = '#e74c3c';
+                } else if (value > max) {
+                    e.target.style.borderColor = '#e74c3c';
+                } else {
+                    e.target.style.borderColor = '#e1e8ed';
+                }
+            });
+        });
+
+        // Add auto-run on parameter change (optional)
+        let autoRunTimeout;
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('change', () => {
+                clearTimeout(autoRunTimeout);
+                autoRunTimeout = setTimeout(() => {
+                    if (simulator.dataPoints.length > 0) {
+                        runTitration(); // Auto-update if data exists
+                    }
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

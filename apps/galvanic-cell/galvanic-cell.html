@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galvanic Cell Simulator</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+    --primary-bg: #1a1a2e;
+    --secondary-bg: #16213e;
+    --accent-bg: #0f3460;
+    --light-accent: #0d3b66;
+    --text-color: #e8e8e8;
+    --accent-color: #4cc9f0;
+    --success-color: #06d6a0;
+    --warning-color: #ffd166;
+    --danger-color: #ef476f;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: var(--transition);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--accent-bg);
+}
+
+h1, h2, h3 {
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--accent-color);
+}
+
+.header-controls {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    background-color: var(--accent-bg);
+    color: var(--text-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn:hover {
+    background-color: var(--light-accent);
+    transform: translateY(-2px);
+}
+
+.hidden {
+    display: none;
+}
+
+.import-btn {
+    display: inline-flex;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+}
+
+.cell-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    overflow: hidden;
+}
+
+.half-cell {
+    position: relative;
+    width: 200px;
+    height: 300px;
+    border-radius: var(--border-radius);
+    background-color: var(--accent-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    box-shadow: var(--box-shadow);
+}
+
+.half-cell h3 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.anode {
+    margin-right: 150px;
+}
+
+.cathode {
+    margin-left: 150px;
+}
+
+.electrode-container {
+    position: relative;
+    height: 150px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.electrode {
+    width: 15px;
+    height: 120px;
+    background-color: #d3d3d3;
+    border-radius: 3px;
+    position: relative;
+    z-index: 2;
+}
+
+.electrolyte {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    background-color: rgba(173, 216, 230, 0.3);
+    z-index: 1;
+    transition: var(--transition);
+}
+
+.salt-bridge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 30px;
+    background-color: #f5f5f5;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+}
+
+.voltmeter {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 120px;
+    background-color: #2c2c2c;
+    border-radius: 50%;
+    border: 5px solid #444;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 5;
+}
+
+.voltmeter-display {
+    position: absolute;
+    top: 25%;
+    width: 70%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 14px;
+    color: var(--accent-color);
+}
+
+.voltmeter-needle-container {
+    position: relative;
+    width: 80%;
+    height: 80%;
+}
+
+.voltmeter-needle {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    width: 60%;
+    height: 4px;
+    background-color: var(--danger-color);
+    transform-origin: left center;
+    transform: rotate(0deg);
+    border-radius: 2px;
+    transition: transform 1s ease;
+    z-index: 2;
+}
+
+.voltmeter-needle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: #444;
+    border-radius: 50%;
+    z-index: 3;
+}
+
+.wire {
+    position: absolute;
+    background-color: #444;
+    z-index: 3;
+}
+
+.wire-top {
+    top: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 3px;
+}
+
+.wire-bottom {
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 3px;
+}
+
+.controls-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.selection-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.anode-selection, .cathode-selection {
+    background-color: var(--secondary-bg);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.select-wrapper {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+select, input[type="range"], input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    border: 1px solid var(--accent-bg);
+    outline: none;
+    transition: var(--transition);
+}
+
+select {
+    cursor: pointer;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    height: 8px;
+    background: var(--accent-bg);
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.concentration-control, .temperature-control {
+    margin-bottom: 15px;
+}
+
+.advanced-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    background-color: var(--secondary-bg);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.simulation-control {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.data-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.cell-potential, .nernst-equation, .cell-diagram {
+    background-color: var(--secondary-bg);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.equation-display, .potential-equation {
+    background-color: var(--accent-bg);
+    padding: 10px;
+    border-radius: var(--border-radius);
+    font-family: 'Courier New', monospace;
+    margin-top: 10px;
+}
+
+.custom-half-reaction-panel {
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-top: 30px;
+}
+
+.custom-reaction-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.data-table-container {
+    margin-top: 30px;
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--accent-bg);
+}
+
+th {
+    background-color: var(--accent-bg);
+    color: var(--text-color);
+}
+
+tbody tr:hover {
+    background-color: rgba(15, 52, 96, 0.5);
+}
+
+.log-container {
+    margin-top: 30px;
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.log-content {
+    background-color: var(--primary-bg);
+    height: 200px;
+    overflow-y: auto;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    font-family: 'Courier New', monospace;
+    color: var(--text-color);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background-color: var(--secondary-bg);
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.export-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.export-preview {
+    background-color: var(--primary-bg);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+pre {
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
+
+/* Animation styles */
+.ion-animation {
+    position: absolute;
+}
+
+.cation-flow, .anion-flow {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.anode-ions, .cathode-ions {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60%;
+    overflow: hidden;
+}
+
+.bubbles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.electron-flow {
+    position: absolute;
+    top: 120px;
+    left: 200px;
+    width: calc(100% - 400px);
+    height: 3px;
+    overflow: hidden;
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 1024px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-display {
+        grid-template-columns: 1fr;
+    }
+    
+    .selection-panel {
+        grid-template-columns: 1fr;
+    }
+    
+    .advanced-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .custom-reaction-form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .cell-container {
+        height: auto;
+        flex-direction: column;
+        padding: 30px 10px;
+    }
+    
+    .half-cell {
+        width: 100%;
+        max-width: 250px;
+        margin: 0 0 80px 0;
+    }
+    
+    .anode {
+        margin-right: 0;
+    }
+    
+    .cathode {
+        margin-left: 0;
+    }
+    
+    .salt-bridge {
+        width: 30px;
+        height: 100px;
+        transform: translate(-50%, 0);
+        top: 45%;
+    }
+    
+    .voltmeter {
+        position: relative;
+        top: 0;
+        transform: none;
+        margin: 30px auto;
+    }
+    
+    .wire-top, .wire-bottom {
+        display: none;
+    }
+}
+
+/* Light mode styles */
+body.light-mode {
+    --primary-bg: #f0f2f5;
+    --secondary-bg: #ffffff;
+    --accent-bg: #e1e5eb;
+    --light-accent: #d1d5db;
+    --text-color: #1f2937;
+    --accent-color: #3b82f6;
+}
+
+/* Animation keyframes */
+@keyframes bubble {
+    0% {
+        transform: translateY(0) scale(0);
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-100px) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes ionMove {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--move-x), var(--move-y));
+        opacity: 0;
+    }
+}
+
+@keyframes electronFlow {
+    0% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.bubble {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    animation: bubble 3s infinite;
+}
+
+.ion {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: ionMove 4s infinite;
+}
+
+.electron {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+    opacity: 0;
+    animation: electronFlow 2s infinite;
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: var(--accent-bg);
+    color: var(--text-color);
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Galvanic Cell Simulator</h1>
+            <div class="header-controls">
+                <button id="exportData" class="btn"><i class="fas fa-download"></i> Export Data</button>
+                <label for="importData" class="btn import-btn"><i class="fas fa-upload"></i> Import Data</label>
+                <input type="file" id="importData" accept=".json,.csv" class="hidden">
+                <button id="toggleDarkMode" class="btn"><i class="fas fa-moon"></i></button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="cell-container">
+                <div class="half-cell anode">
+                    <h3>Oxidation (Anode)</h3>
+                    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+                        <a href="/" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background-color: var(--accent-bg); color: var(--text-color); border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease;" title="Back to Dashboard">
+                            <i class="fas fa-home" style="font-size: 20px;"></i>
+                        </a>
+                    </div>
+                    <div class="electrode-container">
+                        <div class="electrode" id="anodeElectrode"></div>
+                        <div class="bubbles anode-bubbles"></div>
+                    </div>
+                    <div class="electrolyte" id="anodeElectrolyte"></div>
+                    <div class="ion-animation anode-ions"></div>
+                </div>
+
+                <div class="salt-bridge">
+                    <div class="ion-animation cation-flow"></div>
+                    <div class="ion-animation anion-flow"></div>
+                </div>
+
+                <div class="half-cell cathode">
+                    <h3>Reduction (Cathode)</h3>
+                    <div class="electrode-container">
+                        <div class="electrode" id="cathodeElectrode"></div>
+                        <div class="bubbles cathode-bubbles"></div>
+                    </div>
+                    <div class="electrolyte" id="cathodeElectrolyte"></div>
+                    <div class="ion-animation cathode-ions"></div>
+                </div>
+
+                <div class="voltmeter">
+                    <div class="voltmeter-display">
+                        <span id="voltageValue">0.00</span> V
+                    </div>
+                    <div class="voltmeter-needle-container">
+                        <div class="voltmeter-needle" id="voltmeterNeedle"></div>
+                    </div>
+                </div>
+
+                <div class="wire wire-top"></div>
+                <div class="wire wire-bottom"></div>
+                <div class="electron-flow"></div>
+            </div>
+
+            <div class="controls-container">
+                <div class="selection-panel">
+                    <div class="anode-selection">
+                        <h3>Anode Half-Cell</h3>
+                        <div class="select-wrapper">
+                            <label for="anodeMetal">Metal Electrode:</label>
+                            <select id="anodeMetal" class="electrode-select"></select>
+                        </div>
+                        <div class="concentration-control">
+                            <label for="anodeConcentration">Electrolyte Concentration (M):</label>
+                            <input type="range" id="anodeConcentration" min="0.01" max="2" step="0.01" value="1">
+                            <span id="anodeConcentrationValue">1.00</span>
+                        </div>
+                    </div>
+
+                    <div class="cathode-selection">
+                        <h3>Cathode Half-Cell</h3>
+                        <div class="select-wrapper">
+                            <label for="cathodeMetal">Metal Electrode:</label>
+                            <select id="cathodeMetal" class="electrode-select"></select>
+                        </div>
+                        <div class="concentration-control">
+                            <label for="cathodeConcentration">Electrolyte Concentration (M):</label>
+                            <input type="range" id="cathodeConcentration" min="0.01" max="2" step="0.01" value="1">
+                            <span id="cathodeConcentrationValue">1.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="advanced-controls">
+                    <div class="temperature-control">
+                        <label for="temperature">Temperature (K):</label>
+                        <input type="range" id="temperature" min="273" max="373" step="1" value="298">
+                        <span id="temperatureValue">298</span>
+                    </div>
+                    <div class="simulation-control">
+                        <button id="runSimulation" class="btn"><i class="fas fa-play"></i> Run Simulation</button>
+                        <button id="resetSimulation" class="btn"><i class="fas fa-undo"></i> Reset</button>
+                    </div>
+                </div>
+
+                <div class="data-display">
+                    <div class="cell-potential">
+                        <h3>Cell Potential</h3>
+                        <div class="potential-equation">
+                            <p>E<sub>cell</sub> = E<sub>cathode</sub> - E<sub>anode</sub></p>
+                            <p id="potentialEquation">E<sub>cell</sub> = 0.00 - 0.00 = 0.00 V</p>
+                        </div>
+                    </div>
+                    <div class="nernst-equation">
+                        <h3>Nernst Equation</h3>
+                        <div class="equation-display">
+                            <p>E = E° - (RT/nF)ln(Q)</p>
+                            <p id="nernstCalculation">E = 0.00 - (0.0257/n)ln(1) = 0.00 V</p>
+                        </div>
+                    </div>
+                    <div class="cell-diagram">
+                        <h3>Cell Diagram</h3>
+                        <p id="cellDiagram">Anode | Anode<sup>n+</sup> || Cathode<sup>m+</sup> | Cathode</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="custom-half-reaction-panel">
+            <h3>Custom Half-Reaction</h3>
+            <div class="custom-reaction-form">
+                <div class="form-group">
+                    <label for="customMetal">Metal Symbol:</label>
+                    <input type="text" id="customMetal" placeholder="e.g., Cu">
+                </div>
+                <div class="form-group">
+                    <label for="customIon">Ion Formula:</label>
+                    <input type="text" id="customIon" placeholder="e.g., Cu²⁺">
+                </div>
+                <div class="form-group">
+                    <label for="customElectrodes">Number of Electrons:</label>
+                    <input type="number" id="customElectrodes" min="1" max="10" value="2">
+                </div>
+                <div class="form-group">
+                    <label for="customPotential">Standard Red Potential (V):</label>
+                    <input type="number" id="customPotential" step="0.01" placeholder="e.g., 0.34">
+                </div>
+                <div class="form-group">
+                    <label for="customColor">Color (HEX):</label>
+                    <input type="text" id="customColor" placeholder="e.g., #0088FF">
+                </div>
+                <button id="addCustomHalfReaction" class="btn">Add Half-Reaction</button>
+            </div>
+        </div>
+
+        <div class="data-table-container">
+            <h3>Reduction Potentials Table</h3>
+            <div class="table-wrapper">
+                <table id="reductionPotentialsTable">
+                    <thead>
+                        <tr>
+                            <th>Half-Reaction</th>
+                            <th>E° (V)</th>
+                            <th>Metal</th>
+                            <th>Ion</th>
+                            <th>Electrons</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Table content will be generated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="log-container">
+            <h3>Simulation Log</h3>
+            <div id="simulationLog" class="log-content"></div>
+        </div>
+    </div>
+
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Export Data</h2>
+            <div class="export-options">
+                <button id="exportCSV" class="btn">Export as CSV</button>
+                <button id="exportJSON" class="btn">Export as JSON</button>
+            </div>
+            <div class="export-preview">
+                <h3>Preview</h3>
+                <pre id="exportPreview"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="data.js"></script> -->
+     <script>
+        // Standard Reduction Potentials Data
+// This file contains the data for standard reduction potentials at 25°C (298K)
+// Values are in volts (V) relative to the standard hydrogen electrode (SHE)
+
+const standardReductionPotentials = [
+    {
+        metal: 'Li',
+        ion: 'Li⁺',
+        halfReaction: 'Li⁺ + e⁻ → Li',
+        potential: -3.04,
+        electrons: 1,
+        color: '#C0C0C0'
+    },
+    {
+        metal: 'K',
+        ion: 'K⁺',
+        halfReaction: 'K⁺ + e⁻ → K',
+        potential: -2.93,
+        electrons: 1,
+        color: '#9C9C9C'
+    },
+    {
+        metal: 'Ca',
+        ion: 'Ca²⁺',
+        halfReaction: 'Ca²⁺ + 2e⁻ → Ca',
+        potential: -2.87,
+        electrons: 2,
+        color: '#B8B8B8'
+    },
+    {
+        metal: 'Na',
+        ion: 'Na⁺',
+        halfReaction: 'Na⁺ + e⁻ → Na',
+        potential: -2.71,
+        electrons: 1,
+        color: '#D3D3D3'
+    },
+    {
+        metal: 'Mg',
+        ion: 'Mg²⁺',
+        halfReaction: 'Mg²⁺ + 2e⁻ → Mg',
+        potential: -2.37,
+        electrons: 2,
+        color: '#C5C5C5'
+    },
+    {
+        metal: 'Al',
+        ion: 'Al³⁺',
+        halfReaction: 'Al³⁺ + 3e⁻ → Al',
+        potential: -1.66,
+        electrons: 3,
+        color: '#A9A9A9'
+    },
+    {
+        metal: 'Mn',
+        ion: 'Mn²⁺',
+        halfReaction: 'Mn²⁺ + 2e⁻ → Mn',
+        potential: -1.18,
+        electrons: 2,
+        color: '#ABABAB'
+    },
+    {
+        metal: 'Zn',
+        ion: 'Zn²⁺',
+        halfReaction: 'Zn²⁺ + 2e⁻ → Zn',
+        potential: -0.76,
+        electrons: 2,
+        color: '#B0B0B0'
+    },
+    {
+        metal: 'Cr',
+        ion: 'Cr³⁺',
+        halfReaction: 'Cr³⁺ + 3e⁻ → Cr',
+        potential: -0.74,
+        electrons: 3,
+        color: '#A8A8A8'
+    },
+    {
+        metal: 'Fe',
+        ion: 'Fe²⁺',
+        halfReaction: 'Fe²⁺ + 2e⁻ → Fe',
+        potential: -0.44,
+        electrons: 2,
+        color: '#A1785C'
+    },
+    {
+        metal: 'Cd',
+        ion: 'Cd²⁺',
+        halfReaction: 'Cd²⁺ + 2e⁻ → Cd',
+        potential: -0.40,
+        electrons: 2,
+        color: '#B4B4B4'
+    },
+    {
+        metal: 'Co',
+        ion: 'Co²⁺',
+        halfReaction: 'Co²⁺ + 2e⁻ → Co',
+        potential: -0.28,
+        electrons: 2,
+        color: '#A0A0A0'
+    },
+    {
+        metal: 'Ni',
+        ion: 'Ni²⁺',
+        halfReaction: 'Ni²⁺ + 2e⁻ → Ni',
+        potential: -0.25,
+        electrons: 2,
+        color: '#A0A0A0'
+    },
+    {
+        metal: 'Sn',
+        ion: 'Sn²⁺',
+        halfReaction: 'Sn²⁺ + 2e⁻ → Sn',
+        potential: -0.14,
+        electrons: 2,
+        color: '#B0B0B0'
+    },
+    {
+        metal: 'Pb',
+        ion: 'Pb²⁺',
+        halfReaction: 'Pb²⁺ + 2e⁻ → Pb',
+        potential: -0.13,
+        electrons: 2,
+        color: '#778899'
+    },
+    {
+        metal: 'H',
+        ion: 'H⁺',
+        halfReaction: '2H⁺ + 2e⁻ → H₂',
+        potential: 0.00,
+        electrons: 2,
+        color: '#CCCCCC'
+    },
+    {
+        metal: 'Cu',
+        ion: 'Cu²⁺',
+        halfReaction: 'Cu²⁺ + 2e⁻ → Cu',
+        potential: 0.34,
+        electrons: 2,
+        color: '#D2691E'
+    },
+    {
+        metal: 'Cu',
+        ion: 'Cu⁺',
+        halfReaction: 'Cu⁺ + e⁻ → Cu',
+        potential: 0.52,
+        electrons: 1,
+        color: '#D2691E'
+    },
+    {
+        metal: 'I',
+        ion: 'I₂',
+        halfReaction: 'I₂ + 2e⁻ → 2I⁻',
+        potential: 0.54,
+        electrons: 2,
+        color: '#9400D3'
+    },
+    {
+        metal: 'Fe',
+        ion: 'Fe³⁺',
+        halfReaction: 'Fe³⁺ + e⁻ → Fe²⁺',
+        potential: 0.77,
+        electrons: 1,
+        color: '#A1785C'
+    },
+    {
+        metal: 'Hg',
+        ion: 'Hg²⁺',
+        halfReaction: 'Hg²⁺ + 2e⁻ → Hg',
+        potential: 0.79,
+        electrons: 2,
+        color: '#B3B3B3'
+    },
+    {
+        metal: 'Ag',
+        ion: 'Ag⁺',
+        halfReaction: 'Ag⁺ + e⁻ → Ag',
+        potential: 0.80,
+        electrons: 1,
+        color: '#C0C0C0'
+    },
+    {
+        metal: 'Pt',
+        ion: 'Pt²⁺',
+        halfReaction: 'Pt²⁺ + 2e⁻ → Pt',
+        potential: 1.18,
+        electrons: 2,
+        color: '#E5E4E2'
+    },
+    {
+        metal: 'Cl',
+        ion: 'Cl₂',
+        halfReaction: 'Cl₂ + 2e⁻ → 2Cl⁻',
+        potential: 1.36,
+        electrons: 2,
+        color: '#AAFF00'
+    },
+    {
+        metal: 'Au',
+        ion: 'Au³⁺',
+        halfReaction: 'Au³⁺ + 3e⁻ → Au',
+        potential: 1.50,
+        electrons: 3,
+        color: '#FFD700'
+    },
+    {
+        metal: 'Au',
+        ion: 'Au⁺',
+        halfReaction: 'Au⁺ + e⁻ → Au',
+        potential: 1.68,
+        electrons: 1,
+        color: '#FFD700'
+    },
+    {
+        metal: 'F',
+        ion: 'F₂',
+        halfReaction: 'F₂ + 2e⁻ → 2F⁻',
+        potential: 2.87,
+        electrons: 2,
+        color: '#FFFF00'
+    }
+];
+
+// // Make the data available to the main script
+// if (typeof module !== 'undefined' && module.exports) {
+//     // For Node.js environments
+//     module.exports = { standardReductionPotentials };
+// } else {
+//     // For browser environments
+//     window.standardReductionPotentials = standardReductionPotentials;
+// }
+     </script>
+    <!-- <script src="script.js"></script> -->
+     <script>
+        // Global variables
+let reductionPotentials = [];
+let simRunning = false;
+let simulationData = [];
+let darkMode = true;
+
+// Constants
+const R = 8.314; // Gas constant (J/(mol·K))
+const F = 96485; // Faraday constant (C/mol)
+
+// DOM elements
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the application
+    initApp();
+});
+
+// Initialize the application
+function initApp() {
+    // Load reduction potentials data
+    fetchReductionPotentials();
+    
+    // Set up event listeners
+    setupEventListeners();
+    
+    // Create initial animations
+    createIonAnimations();
+    
+    // Log initialization
+    logMessage('Galvanic Cell Simulator initialized');
+}
+
+// Fetch reduction potentials data
+function fetchReductionPotentials() {
+    // Simulating fetch from data.js (in a real app, this would be loaded from data.js)
+    // For demonstration purposes, we'll define sample data here
+
+    // reductionPotentials = [
+    //     {
+    //         metal: 'Au',
+    //         ion: 'Au³⁺',
+    //         halfReaction: 'Au³⁺ + 3e⁻ → Au',
+    //         potential: 1.50,
+    //         electrons: 3,
+    //         color: '#FFD700'
+    //     }
+    // ];
+
+    reductionPotentials = standardReductionPotentials;
+    // Populate the reduction potentials table
+    populateReductionTable();
+    
+    // Populate the electrode select dropdowns
+    populateElectrodeDropdowns();
+}
+
+// Populate the reduction potentials table
+function populateReductionTable() {
+    const tableBody = document.getElementById('reductionPotentialsTable').getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = '';
+    
+    reductionPotentials.forEach(entry => {
+        const row = tableBody.insertRow();
+        
+        const halfReactionCell = row.insertCell(0);
+        const potentialCell = row.insertCell(1);
+        const metalCell = row.insertCell(2);
+        const ionCell = row.insertCell(3);
+        const electronsCell = row.insertCell(4);
+        
+        halfReactionCell.textContent = entry.halfReaction;
+        potentialCell.textContent = entry.potential.toFixed(2);
+        metalCell.textContent = entry.metal;
+        ionCell.textContent = entry.ion;
+        electronsCell.textContent = entry.electrons;
+        
+        // Add color indicator
+        metalCell.style.position = 'relative';
+        const colorIndicator = document.createElement('span');
+        colorIndicator.style.display = 'inline-block';
+        colorIndicator.style.width = '15px';
+        colorIndicator.style.height = '15px';
+        colorIndicator.style.backgroundColor = entry.color;
+        colorIndicator.style.borderRadius = '50%';
+        colorIndicator.style.marginLeft = '5px';
+        colorIndicator.style.verticalAlign = 'middle';
+        metalCell.appendChild(colorIndicator);
+    });
+}
+
+// Populate electrode select dropdowns
+function populateElectrodeDropdowns() {
+    const anodeSelect = document.getElementById('anodeMetal');
+    const cathodeSelect = document.getElementById('cathodeMetal');
+    
+    anodeSelect.innerHTML = '';
+    cathodeSelect.innerHTML = '';
+    
+    reductionPotentials.forEach(entry => {
+        const anodeOption = document.createElement('option');
+        anodeOption.value = entry.metal;
+        anodeOption.textContent = `${entry.metal} | ${entry.ion} (${entry.potential.toFixed(2)} V)`;
+        anodeSelect.appendChild(anodeOption);
+        
+        const cathodeOption = document.createElement('option');
+        cathodeOption.value = entry.metal;
+        cathodeOption.textContent = `${entry.metal} | ${entry.ion} (${entry.potential.toFixed(2)} V)`;
+        cathodeSelect.appendChild(cathodeOption);
+    });
+    
+    // Set default selections (Zn for anode, Cu for cathode as a common example)
+    const znIndex = reductionPotentials.findIndex(entry => entry.metal === 'Zn');
+    const cuIndex = reductionPotentials.findIndex(entry => entry.metal === 'Cu');
+    
+    if (znIndex !== -1) anodeSelect.selectedIndex = znIndex;
+    if (cuIndex !== -1) cathodeSelect.selectedIndex = cuIndex;
+    
+    // Update the cell on initial load
+    updateCell();
+}
+
+// Set up event listeners
+function setupEventListeners() {
+    // Electrode selection change events
+    document.getElementById('anodeMetal').addEventListener('change', updateCell);
+    document.getElementById('cathodeMetal').addEventListener('change', updateCell);
+    
+    // Concentration sliders
+    document.getElementById('anodeConcentration').addEventListener('input', function() {
+        document.getElementById('anodeConcentrationValue').textContent = parseFloat(this.value).toFixed(2);
+        updateCell();
+    });
+    
+    document.getElementById('cathodeConcentration').addEventListener('input', function() {
+        document.getElementById('cathodeConcentrationValue').textContent = parseFloat(this.value).toFixed(2);
+        updateCell();
+    });
+    
+    // Temperature slider
+    document.getElementById('temperature').addEventListener('input', function() {
+        document.getElementById('temperatureValue').textContent = this.value;
+        updateCell();
+    });
+    
+    // Run/Reset simulation buttons
+    document.getElementById('runSimulation').addEventListener('click', toggleSimulation);
+    document.getElementById('resetSimulation').addEventListener('click', resetSimulation);
+    
+    // Custom half-reaction button
+    document.getElementById('addCustomHalfReaction').addEventListener('click', addCustomHalfReaction);
+    
+    // Export/Import buttons
+    document.getElementById('exportData').addEventListener('click', showExportModal);
+    document.getElementById('importData').addEventListener('change', importData);
+    document.getElementById('exportCSV').addEventListener('click', () => exportData('csv'));
+    document.getElementById('exportJSON').addEventListener('click', () => exportData('json'));
+    
+    // Modal close button
+    document.querySelector('.close-modal').addEventListener('click', closeExportModal);
+    
+    // Dark/Light mode toggle
+    document.getElementById('toggleDarkMode').addEventListener('click', toggleDarkMode);
+}
+
+// Update the cell based on current selections
+function updateCell() {
+    // Get selected values
+    const anodeMetalValue = document.getElementById('anodeMetal').value;
+    const cathodeMetalValue = document.getElementById('cathodeMetal').value;
+    const anodeConcentration = parseFloat(document.getElementById('anodeConcentration').value);
+    const cathodeConcentration = parseFloat(document.getElementById('cathodeConcentration').value);
+    const temperature = parseFloat(document.getElementById('temperature').value);
+    
+    // Find the selected half-reactions
+    const anodeData = reductionPotentials.find(entry => entry.metal === anodeMetalValue);
+    const cathodeData = reductionPotentials.find(entry => entry.metal === cathodeMetalValue);
+    
+    if (!anodeData || !cathodeData) return;
+    
+    // Update electrode visuals
+    updateElectrodeVisuals('anodeElectrode', anodeData);
+    updateElectrodeVisuals('cathodeElectrode', cathodeData);
+    
+    // Update electrolyte visuals
+    updateElectrolyteVisuals('anodeElectrolyte', anodeData, anodeConcentration);
+    updateElectrolyteVisuals('cathodeElectrolyte', cathodeData, cathodeConcentration);
+    
+    // Calculate cell potential
+    const standardCellPotential = cathodeData.potential - anodeData.potential;
+    
+    // Calculate potential using Nernst equation
+    const nernstFactor = (R * temperature) / (F) * Math.log(cathodeConcentration / anodeConcentration) / Math.log(10) * 0.05916;
+    const actualCellPotential = standardCellPotential - nernstFactor;
+    
+    // Update voltmeter
+    updateVoltmeter(actualCellPotential);
+    
+    // Update cell diagram
+    updateCellDiagram(anodeData, cathodeData);
+    
+    // Update potential equation
+    updatePotentialEquation(anodeData, cathodeData, standardCellPotential);
+    
+    // Update Nernst equation
+    updateNernstEquation(anodeData, cathodeData, standardCellPotential, actualCellPotential, temperature);
+    
+    // Log the update
+    logMessage(`Cell updated: ${anodeData.metal}|${anodeData.ion} || ${cathodeData.ion}|${cathodeData.metal}, E = ${actualCellPotential.toFixed(2)} V`);
+    
+    // Add data point to simulation data
+    simulationData.push({
+        timestamp: new Date().toISOString(),
+        anode: anodeData.metal,
+        anodeConcentration: anodeConcentration,
+        cathode: cathodeData.metal,
+        cathodeConcentration: cathodeConcentration,
+        temperature: temperature,
+        standardPotential: standardCellPotential,
+        actualPotential: actualCellPotential
+    });
+}
+
+// Update electrode visuals
+function updateElectrodeVisuals(electrodeId, data) {
+    const electrode = document.getElementById(electrodeId);
+    electrode.style.backgroundColor = data.color;
+    electrode.setAttribute('title', `${data.metal} electrode`);
+}
+
+// Update electrolyte visuals
+function updateElectrolyteVisuals(electrolyteId, data, concentration) {
+    const electrolyte = document.getElementById(electrolyteId);
+    
+    // Adjust opacity based on concentration
+    const opacity = 0.3 + (concentration * 0.35);
+    
+    // Derive a lighter color from the electrode color for the electrolyte
+    const hexToRgb = hex => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : { r: 173, g: 216, b: 230 }; // Default to light blue if conversion fails
+    };
+    
+    const rgb = hexToRgb(data.color);
+    const lighterRgb = {
+        r: Math.min(255, rgb.r + 50),
+        g: Math.min(255, rgb.g + 50),
+        b: Math.min(255, rgb.b + 50)
+    };
+    
+    electrolyte.style.backgroundColor = `rgba(${lighterRgb.r}, ${lighterRgb.g}, ${lighterRgb.b}, ${opacity})`;
+    electrolyte.setAttribute('title', `${data.ion} (${concentration.toFixed(2)} M)`);
+}
+
+// Update voltmeter
+function updateVoltmeter(voltage) {
+    // Update digital display
+    document.getElementById('voltageValue').textContent = voltage.toFixed(2);
+    
+    // Update needle position
+    // Assuming voltage range from -3 to +3 volts, mapping to -90 to +90 degrees
+    const maxVoltage = 3;
+    const minVoltage = -3;
+    const maxAngle = 90;
+    const minAngle = -90;
+    
+    const angle = ((voltage - minVoltage) / (maxVoltage - minVoltage)) * (maxAngle - minAngle) + minAngle;
+    document.getElementById('voltmeterNeedle').style.transform = `rotate(${angle}deg)`;
+}
+
+// Update cell diagram
+function updateCellDiagram(anodeData, cathodeData) {
+    const cellDiagram = document.getElementById('cellDiagram');
+    cellDiagram.innerHTML = `${anodeData.metal} | ${anodeData.ion} || ${cathodeData.ion} | ${cathodeData.metal}`;
+}
+
+// Update potential equation
+function updatePotentialEquation(anodeData, cathodeData, potential) {
+    const potentialEquation = document.getElementById('potentialEquation');
+    potentialEquation.innerHTML = `E<sub>cell</sub> = ${cathodeData.potential.toFixed(2)} - (${anodeData.potential.toFixed(2)}) = ${potential.toFixed(2)} V`;
+}
+
+// Update Nernst equation
+function updateNernstEquation(anodeData, cathodeData, standardPotential, actualPotential, temperature) {
+    const nernstCalculation = document.getElementById('nernstCalculation');
+    const n = Math.max(anodeData.electrons, cathodeData.electrons);
+    const RT_nF = ((R * temperature) / (n * F) * Math.log(10)).toFixed(4);
+    
+    nernstCalculation.innerHTML = `E = ${standardPotential.toFixed(2)} - (${RT_nF}/n)log(Q) = ${actualPotential.toFixed(2)} V`;
+}
+
+// Toggle simulation
+function toggleSimulation() {
+    const runButton = document.getElementById('runSimulation');
+    
+    if (!simRunning) {
+        // Start simulation
+        simRunning = true;
+        runButton.innerHTML = '<i class="fas fa-pause"></i> Pause Simulation';
+        
+        // Animate electron flow
+        startElectronFlow();
+        
+        // Animate ion movement
+        startIonMovement();
+        
+        logMessage("Simulation started");
+    } else {
+        // Stop simulation
+        simRunning = false;
+        runButton.innerHTML = '<i class="fas fa-play"></i> Run Simulation';
+        
+        // Stop animations
+        stopElectronFlow();
+        stopIonMovement();
+        
+        logMessage("Simulation paused");
+    }
+}
+
+// Create ion animations
+function createIonAnimations() {
+    // This function creates the initial ion animation elements
+    // It will be called on page load to set up the animation containers
+    
+    // Create bubbles in anode compartment
+    const anodeBubbles = document.querySelector('.anode-bubbles');
+    for (let i = 0; i < 5; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.left = `${Math.random() * 80 + 10}%`;
+        bubble.style.width = `${Math.random() * 8 + 2}px`;
+        bubble.style.height = bubble.style.width;
+        bubble.style.animationDelay = `${Math.random() * 3}s`;
+        anodeBubbles.appendChild(bubble);
+    }
+    
+    // Create bubbles in cathode compartment
+    const cathodeBubbles = document.querySelector('.cathode-bubbles');
+    for (let i = 0; i < 5; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.left = `${Math.random() * 80 + 10}%`;
+        bubble.style.width = `${Math.random() * 8 + 2}px`;
+        bubble.style.height = bubble.style.width;
+        bubble.style.animationDelay = `${Math.random() * 3}s`;
+        cathodeBubbles.appendChild(bubble);
+    }
+}
+
+// Start electron flow animation
+function startElectronFlow() {
+    const electronFlow = document.querySelector('.electron-flow');
+    electronFlow.innerHTML = '';
+    
+    // Create electrons
+    for (let i = 0; i < 10; i++) {
+        const electron = document.createElement('div');
+        electron.className = 'electron';
+        electron.style.left = '0%';
+        electron.style.top = `${Math.random() * 100}%`;
+        electron.style.animationDelay = `${i * 0.2}s`;
+        electronFlow.appendChild(electron);
+    }
+}
+
+// Stop electron flow animation
+function stopElectronFlow() {
+    const electronFlow = document.querySelector('.electron-flow');
+    electronFlow.innerHTML = '';
+}
+
+// Start ion movement animation
+function startIonMovement() {
+    // Cation flow in salt bridge (from anode to cathode)
+    const cationFlow = document.querySelector('.cation-flow');
+    cationFlow.innerHTML = '';
+    
+    for (let i = 0; i < 5; i++) {
+        const cation = document.createElement('div');
+        cation.className = 'ion';
+        cation.style.backgroundColor = '#FF5722';
+        cation.style.left = `${Math.random() * 20}%`;
+        cation.style.top = `${Math.random() * 60 + 20}%`;
+        cation.style.setProperty('--move-x', '150px');
+        cation.style.setProperty('--move-y', '0px');
+        cation.style.animationDelay = `${i * 0.8}s`;
+        cationFlow.appendChild(cation);
+    }
+    
+    // Anion flow in salt bridge (from cathode to anode)
+    const anionFlow = document.querySelector('.anion-flow');
+    anionFlow.innerHTML = '';
+    
+    for (let i = 0; i < 5; i++) {
+        const anion = document.createElement('div');
+        anion.className = 'ion';
+        anion.style.backgroundColor = '#2196F3';
+        anion.style.right = `${Math.random() * 20}%`;
+        anion.style.top = `${Math.random() * 60 + 20}%`;
+        anion.style.setProperty('--move-x', '-150px');
+        anion.style.setProperty('--move-y', '0px');
+        anion.style.animationDelay = `${i * 0.8}s`;
+        anionFlow.appendChild(anion);
+    }
+}
+
+// Stop ion movement animation
+function stopIonMovement() {
+    document.querySelector('.cation-flow').innerHTML = '';
+    document.querySelector('.anion-flow').innerHTML = '';
+    document.querySelector('.anode-ions').innerHTML = '';
+    document.querySelector('.cathode-ions').innerHTML = '';
+}
+
+// Reset simulation
+function resetSimulation() {
+    if (simRunning) {
+        toggleSimulation(); // Stop the simulation if it's running
+    }
+    
+    // Reset sliders to default values
+    document.getElementById('anodeConcentration').value = 1;
+    document.getElementById('anodeConcentrationValue').textContent = '1.00';
+    document.getElementById('cathodeConcentration').value = 1;
+    document.getElementById('cathodeConcentrationValue').textContent = '1.00';
+    document.getElementById('temperature').value = 298;
+    document.getElementById('temperatureValue').textContent = '298';
+    
+    // Update the cell with reset values
+    updateCell();
+    
+    // Clear simulation log
+    document.getElementById('simulationLog').innerHTML = '';
+    logMessage("Simulation reset");
+    
+    // Reset simulation data
+    simulationData = [];
+}
+
+// Add custom half reaction
+function addCustomHalfReaction() {
+    const customMetal = document.getElementById('customMetal').value.trim();
+    const customIon = document.getElementById('customIon').value.trim();
+    const customElectrons = parseInt(document.getElementById('customElectrodes').value);
+    const customPotential = parseFloat(document.getElementById('customPotential').value);
+    const customColor = document.getElementById('customColor').value.trim();
+    
+    // Validate inputs
+    if (!customMetal || !customIon || isNaN(customElectrons) || isNaN(customPotential) || !customColor) {
+        logMessage("Error: All fields are required for custom half-reaction", true);
+        return;
+    }
+    
+    // Create half-reaction string
+    const halfReaction = `${customIon} + ${customElectrons}e⁻ → ${customMetal}`;
+    
+    // Add to reduction potentials array
+    reductionPotentials.push({
+        metal: customMetal,
+        ion: customIon,
+        halfReaction: halfReaction,
+        potential: customPotential,
+        electrons: customElectrons,
+        color: customColor
+    });
+    
+    // Sort by potential
+    reductionPotentials.sort((a, b) => a.potential - b.potential);
+    
+    // Update the table and dropdowns
+    populateReductionTable();
+    populateElectrodeDropdowns();
+    
+    // Clear the form
+    document.getElementById('customMetal').value = '';
+    document.getElementById('customIon').value = '';
+    document.getElementById('customElectrodes').value = '2';
+    document.getElementById('customPotential').value = '';
+    document.getElementById('customColor').value = '';
+    
+    logMessage(`Custom half-reaction added: ${halfReaction} (${customPotential} V)`);
+}
+
+// Show export modal
+function showExportModal() {
+    const exportModal = document.getElementById('exportModal');
+    exportModal.style.display = 'block';
+    
+    // Generate preview
+    const preview = JSON.stringify(simulationData, null, 2);
+    document.getElementById('exportPreview').textContent = preview;
+}
+
+// Close export modal
+function closeExportModal() {
+    document.getElementById('exportModal').style.display = 'none';
+}
+
+// Export data
+function exportData(format) {
+    if (simulationData.length === 0) {
+        logMessage("No data to export", true);
+        return;
+    }
+    
+    let content, filename, mimeType;
+    
+    if (format === 'csv') {
+        // Convert to CSV
+        const headers = Object.keys(simulationData[0]).join(',');
+        const rows = simulationData.map(row => Object.values(row).join(','));
+        content = [headers, ...rows].join('\n');
+        filename = 'galvanic_cell_data.csv';
+        mimeType = 'text/csv';
+    } else {
+        // JSON format
+        content = JSON.stringify(simulationData, null, 2);
+        filename = 'galvanic_cell_data.json';
+        mimeType = 'application/json';
+    }
+    
+    // Create download link
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    logMessage(`Data exported as ${format.toUpperCase()}`);
+}
+
+// Import data
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            
+            if (fileExt === 'json') {
+                // Parse JSON
+                simulationData = JSON.parse(e.target.result);
+                logMessage(`Imported ${simulationData.length} data points from JSON`);
+            } else if (fileExt === 'csv') {
+                // Parse CSV
+                const lines = e.target.result.split('\n');
+                const headers = lines[0].split(',');
+                
+                simulationData = [];
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    
+                    const values = lines[i].split(',');
+                    const obj = {};
+                    
+                    headers.forEach((header, index) => {
+                        // Try to convert numeric values
+                        const value = values[index];
+                        obj[header] = isNaN(value) ? value : parseFloat(value);
+                    });
+                    
+                    simulationData.push(obj);
+                }
+                
+                logMessage(`Imported ${simulationData.length} data points from CSV`);
+            } else {
+                logMessage('Unsupported file format. Please use JSON or CSV.', true);
+            }
+            
+            // If data was successfully imported, apply the last data point
+            if (simulationData.length > 0) {
+                const lastDataPoint = simulationData[simulationData.length - 1];
+                
+                // Find the indices of the metals
+                const anodeIndex = reductionPotentials.findIndex(entry => entry.metal === lastDataPoint.anode);
+                const cathodeIndex = reductionPotentials.findIndex(entry => entry.metal === lastDataPoint.cathode);
+                
+                // Update dropdowns if metals are found
+                if (anodeIndex !== -1) {
+                    document.getElementById('anodeMetal').selectedIndex = anodeIndex;
+                }
+                
+                if (cathodeIndex !== -1) {
+                    document.getElementById('cathodeMetal').selectedIndex = cathodeIndex;
+                }
+                
+                // Update concentration and temperature sliders
+                document.getElementById('anodeConcentration').value = lastDataPoint.anodeConcentration;
+                document.getElementById('anodeConcentrationValue').textContent = lastDataPoint.anodeConcentration.toFixed(2);
+                
+                document.getElementById('cathodeConcentration').value = lastDataPoint.cathodeConcentration;
+                document.getElementById('cathodeConcentrationValue').textContent = lastDataPoint.cathodeConcentration.toFixed(2);
+                
+                document.getElementById('temperature').value = lastDataPoint.temperature;
+                document.getElementById('temperatureValue').textContent = lastDataPoint.temperature;
+                
+                // Update the cell with imported values
+                updateCell();
+            }
+            
+        } catch (error) {
+            logMessage(`Error importing data: ${error.message}`, true);
+        }
+    };
+    
+    reader.onerror = function() {
+        logMessage('Error reading file', true);
+    };
+    
+    if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        reader.readAsText(file);
+    } else if (file.type === 'text/csv' || file.name.endsWith('.csv')) {
+        reader.readAsText(file);
+    } else {
+        logMessage('Unsupported file type. Please use JSON or CSV.', true);
+    }
+}
+
+// Toggle dark/light mode
+function toggleDarkMode() {
+    const body = document.body;
+    darkMode = !darkMode;
+    
+    if (darkMode) {
+        body.classList.remove('light-mode');
+        document.getElementById('toggleDarkMode').innerHTML = '<i class="fas fa-moon"></i>';
+    } else {
+        body.classList.add('light-mode');
+        document.getElementById('toggleDarkMode').innerHTML = '<i class="fas fa-sun"></i>';
+    }
+}
+
+// Log message to the simulation log
+function logMessage(message, isError = false) {
+    const log = document.getElementById('simulationLog');
+    const timestamp = new Date().toLocaleTimeString();
+    const messageClass = isError ? 'error-message' : '';
+    
+    log.innerHTML += `<div class="${messageClass}"><span class="timestamp">[${timestamp}]</span> ${message}</div>`;
+    log.scrollTop = log.scrollHeight;
+}
+
+// Export the reduction potentials data to a JSON file
+function exportReductionPotentialsToJSON() {
+    const content = JSON.stringify(reductionPotentials, null, 2);
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reduction_potentials.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    logMessage('Reduction potentials exported to JSON');
+}
+
+// Save the current state as a preset
+function savePreset() {
+    const anodeMetalValue = document.getElementById('anodeMetal').value;
+    const cathodeMetalValue = document.getElementById('cathodeMetal').value;
+    const anodeConcentration = parseFloat(document.getElementById('anodeConcentration').value);
+    const cathodeConcentration = parseFloat(document.getElementById('cathodeConcentration').value);
+    const temperature = parseFloat(document.getElementById('temperature').value);
+    
+    const presetName = prompt('Enter a name for this preset:');
+    if (!presetName) return;
+    
+    const preset = {
+        name: presetName,
+        anode: anodeMetalValue,
+        cathode: cathodeMetalValue,
+        anodeConcentration: anodeConcentration,
+        cathodeConcentration: cathodeConcentration,
+        temperature: temperature
+    };
+    
+    // In a real app, we would save this to localStorage or a server
+    // For now, we'll just log it
+    console.log('Preset saved:', preset);
+    logMessage(`Preset "${presetName}" saved`);
+} 
+     </script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quadratic Factoring Practice Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+            --text-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .controls input, 
+        .controls button {
+            padding: 0.5rem;
+            border: 1px solid var(--secondary-color);
+            border-radius: 5px;
+        }
+
+        .controls button {
+            background-color: var(--secondary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .controls button:hover {
+            background-color: #2980b9;
+        }
+
+        #problems {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .problem {
+            background-color: #f7f9fa;
+            border-radius: 5px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .problem-math {
+            font-size: 1.1rem;
+        }
+
+        .problem-answer {
+            color: var(--secondary-color);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .problem-answer.visible {
+            color: var(--text-color);
+        }
+
+        #export-json {
+            margin-top: 1rem;
+            background-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quadratic Factoring Practice Generator</h1>
+        <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+            <a href="/" style="display: flex; align-items: center; justify-content: center; width: 50px; height: 50px; background-color: #3498db; color: white; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); text-decoration: none; transition: transform 0.3s ease, box-shadow 0.3s ease;" title="Back to Dashboard">
+                <i class="fas fa-home" style="font-size: 20px;"></i>
+            </a>
+        </div>
+        <div class="controls">
+            <input 
+                type="number" 
+                id="num-problems" 
+                placeholder="Number of problems" 
+                min="1" 
+                max="20" 
+                value="5"
+            >
+            <button onclick="generateProblems()">Generate Problems</button>
+            <button id="export-json" onclick="exportToJSON()">Export to JSON</button>
+        </div>
+
+        <div id="problems"></div>
+    </div>
+
+    <script>
+        class QuadraticGenerator {
+            constructor() {
+                // Coefficients will ensure factorable quadratics
+                this.coefficientRanges = {
+                    a: [1, 3],
+                    b: [-10, 10],
+                    c: [-20, 20]
+                };
+            }
+
+            generateFactorableProblem() {
+                // Ensure the quadratic is factorable by choosing integers that multiply nicely
+                const signs = [1, -1];
+                const p = this.randomInteger(-10, 10);
+                const q = this.randomInteger(-10, 10);
+
+                // Construct quadratic: (x + p)(x + q)
+                const a = 1;
+                const b = p + q;
+                const c = p * q;
+
+                return {
+                    quadratic: `x² ${this.formatCoefficient(b, true)} ${this.formatCoefficient(c)}`,
+                    solution: `(x ${this.formatFactorTerm(p)})(x ${this.formatFactorTerm(q)})`
+                };
+            }
+
+            randomInteger(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            formatCoefficient(coef, isLinear = false) {
+                if (coef === 0) return '';
+                const sign = coef > 0 ? '+' : '-';
+                const absCoef = Math.abs(coef);
+                return isLinear 
+                    ? `${sign} ${absCoef === 1 ? '' : absCoef}x` 
+                    : `${sign} ${absCoef}`;
+            }
+
+            formatFactorTerm(value) {
+                return value >= 0 ? `+ ${value}` : `- ${Math.abs(value)}`;
+            }
+        }
+
+        const quadraticGen = new QuadraticGenerator();
+        const problemsContainer = document.getElementById('problems');
+        const numProblemsInput = document.getElementById('num-problems');
+
+        function generateProblems() {
+            const numProblems = parseInt(numProblemsInput.value) || 5;
+            problemsContainer.innerHTML = '';
+
+            const problems = [];
+            for (let i = 0; i < numProblems; i++) {
+                const problem = quadraticGen.generateFactorableProblem();
+                problems.push(problem);
+
+                const problemElement = document.createElement('div');
+                problemElement.classList.add('problem');
+                problemElement.innerHTML = `
+                    <div class="problem-math">${i + 1}. Factorize: ${problem.quadratic}</div>
+                    <div class="problem-answer" onclick="toggleAnswer(this)">Show Solution</div>
+                `;
+                problemsContainer.appendChild(problemElement);
+            }
+
+            window.currentProblems = problems;
+        }
+
+        function toggleAnswer(answerElement) {
+            const currentProblems = window.currentProblems || [];
+            const problemIndex = Array.from(problemsContainer.children).indexOf(answerElement.closest('.problem'));
+            
+            if (answerElement.textContent === 'Show Solution') {
+                answerElement.textContent = currentProblems[problemIndex].solution;
+                answerElement.classList.add('visible');
+            } else {
+                answerElement.textContent = 'Show Solution';
+                answerElement.classList.remove('visible');
+            }
+        }
+
+        function exportToJSON() {
+            const problems = window.currentProblems || [];
+            if (problems.length === 0) {
+                alert('Generate problems first!');
+                return;
+            }
+
+            const jsonContent = JSON.stringify(problems, null, 2);
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quadratic_problems.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initial generation of problems
+        generateProblems();
+    </script>
+</body>
+</html>

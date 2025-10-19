@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App Title</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    /* Loading animation */
+    .loading {
+      cursor: wait;
+    }
+
+    .loading::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 9999;
+    }
+
+    .loading::before {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      z-index: 10000;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+
+      100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
+    }
+
+    /* Dark mode styles */
+    .dark-mode {
+      --primary: #4dabf7;
+      --primary-dark: #339af0;
+      --secondary: #212529;
+      --light: #343a40;
+      --dark: #1a1d20;
+      --text: #e9ecef;
+      --text-light: #ced4da;
+    }
+
+    .dark-mode body {
+      background-color: #121212;
+    }
+
+    .dark-mode .main-content {
+      background-color: #1e1e1e;
+    }
+
+    .dark-mode .card,
+    .dark-mode .app-content {
+      background-color: #2d2d2d;
+      color: #e9ecef;
+    }
+
+    .dark-mode h1,
+    .dark-mode .app-content h3 {
+      color: #e9ecef;
+    }
+
+    .dark-mode p {
+      color: #ced4da;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-cubes"></i> My Apps</h2>
+      </div>
+      <button id="sidebar-toggle" class="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="nav-links">
+        a></li>
+        <!-- <li><a href="/app/jeopardy"><i class="fas fa-atom"></i>Educational Jeopardy</a></li> -->
+         <!-- App navigation links go here -->
+      </ul>
+
+      <div style="margin-top: auto; padding: 20px;">
+        <button id="dark-mode-toggle"
+          style="background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center;">
+          <i class="fas fa-moon" style="margin-right: 10px;"></i> Toggle Dark Mode
+        </button>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <div class="breadcrumb">
+        <a href="/"><i class="fas fa-home"></i> Home</a>
+        <span>/</span>
+        <span>App Title</span>
+      </div>
+
+      <h1>App Title</h1>
+
+      <div class="app-content">
+        <!-- Your app content goes here -->
+        <p>This is where your app's HTML, JavaScript, and other content will go.</p>
+      </div>
+
+      <div class="back-link">
+        <a href="/"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+</body>
+
+</html>
